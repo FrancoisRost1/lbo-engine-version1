@@ -136,32 +136,81 @@ st.set_page_config(page_title="LBO Engine", layout="wide")
 
 st.markdown("""
 <style>
-html, body, [class*="css"] { font-size: 13px !important; }
-h1 { font-size: 16px !important; font-weight: 600 !important;
-     color: #1a1a1a !important; letter-spacing: 0.5px !important; }
-h2, h3 { font-size: 13px !important; font-weight: 600 !important;
-          color: #1a1a1a !important; text-transform: uppercase !important;
-          letter-spacing: 0.8px !important; }
+/* === BASE === */
+html, body, [class*="css"], .stApp {
+    background-color: #0a0a0a !important;
+    color: #e8e8e8 !important;
+    font-size: 13px !important;
+}
+
+/* === TYPOGRAPHY === */
+h1, h2, h3 {
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #ffffff !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.8px !important;
+}
+
+/* === METRICS === */
 [data-testid="metric-container"] {
-    background: #f8f8f8 !important;
-    border: 1px solid #e0e0e0 !important;
+    background: #1a1a1a !important;
+    border: 1px solid #2a2a2a !important;
     border-radius: 2px !important;
     padding: 8px 12px !important;
 }
 [data-testid="metric-container"] label {
     font-size: 10px !important;
-    color: #666 !important;
+    color: #bbbbbb !important;
     text-transform: uppercase !important;
     letter-spacing: 0.5px !important;
 }
 [data-testid="metric-container"] [data-testid="metric-value"] {
     font-size: 18px !important;
     font-weight: 600 !important;
-    color: #1a1a1a !important;
+    color: #ffffff !important;
 }
-.block-container { padding-top: 1rem !important; padding-bottom: 0rem !important; }
-hr { margin: 0.5rem 0 !important; border-color: #e0e0e0 !important; }
-.stSubheader { margin-bottom: 0.25rem !important; }
+
+/* === INPUTS === */
+[data-testid="stNumberInput"] input {
+    background-color: #1a1a1a !important;
+    color: #e8e8e8 !important;
+    border: 1px solid #2a2a2a !important;
+    border-radius: 2px !important;
+}
+[data-testid="stNumberInput"] label {
+    color: #aaa !important;
+    font-size: 11px !important;
+}
+
+/* === DATAFRAME === */
+[data-testid="stDataFrame"] {
+    background: #1a1a1a !important;
+}
+
+/* === GENERAL TEXT === */
+p, span, div, label, small {
+    color: #cccccc !important;
+}
+
+/* === DIVIDERS === */
+hr {
+    margin: 0.5rem 0 !important;
+    border-color: #2a2a2a !important;
+}
+
+/* === LAYOUT === */
+.block-container {
+    padding-top: 1rem !important;
+    padding-bottom: 0rem !important;
+    background-color: #0a0a0a !important;
+}
+
+/* === SIDEBAR / COLUMNS background === */
+section[data-testid="stSidebar"],
+[data-testid="column"] {
+    background-color: #0a0a0a !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -265,7 +314,7 @@ with right:
     fig_debt.add_hline(
         y=r["initial_debt"],
         line_dash="dot",
-        line_color="gray",
+        line_color="#444",
         annotation_text=f"Initial Debt ${r['initial_debt']:.0f}M",
         annotation_position="top right",
     )
@@ -275,11 +324,12 @@ with right:
         height=280,
         margin=dict(t=20, b=20),
         showlegend=False,
-        plot_bgcolor="#ffffff",
-        paper_bgcolor="#ffffff",
+        plot_bgcolor="#0a0a0a",
+        paper_bgcolor="#0a0a0a",
+        font=dict(color="#e8e8e8"),
     )
-    fig_debt.update_xaxes(showgrid=False)
-    fig_debt.update_yaxes(gridcolor="#f0f0f0")
+    fig_debt.update_xaxes(gridcolor="#1a1a1a", color="#888")
+    fig_debt.update_yaxes(gridcolor="#1a1a1a", color="#888")
     st.plotly_chart(fig_debt, use_container_width=True)
 
     st.divider()
@@ -343,7 +393,10 @@ with right:
         height=280,
         margin=dict(t=20, b=20),
         showlegend=False,
-        plot_bgcolor="#ffffff",
-        paper_bgcolor="#ffffff",
+        plot_bgcolor="#0a0a0a",
+        paper_bgcolor="#0a0a0a",
+        font=dict(color="#e8e8e8"),
     )
+    fig_mc.update_xaxes(gridcolor="#1a1a1a", color="#888")
+    fig_mc.update_yaxes(gridcolor="#1a1a1a", color="#888")
     st.plotly_chart(fig_mc, use_container_width=True)
