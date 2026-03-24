@@ -4,7 +4,7 @@
 > simulates a full PE deal from entry to exit with scenario analysis,
 > Monte Carlo simulation, and an interactive Bloomberg-style dashboard.
 
-![App Screenshot](screenshot.png)
+![App Screenshot](Screenshot.png)
 
 ---
 
