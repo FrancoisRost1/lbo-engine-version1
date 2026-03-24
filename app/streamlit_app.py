@@ -261,10 +261,12 @@ h1, h2, h3 {
 
 /* === INPUTS === */
 [data-testid="stNumberInput"] input {
-    background-color: #1a1a1a !important;
+    background-color: #111111 !important;
     color: #e8e8e8 !important;
-    border: 1px solid #2a2a2a !important;
-    border-radius: 2px !important;
+    border: 1px solid #222222 !important;
+    border-radius: 0px !important;
+    padding: 4px 8px !important;
+    font-size: 12px !important;
 }
 [data-testid="stNumberInput"] label {
     color: #aaa !important;
@@ -359,12 +361,13 @@ with right:
     # KPI Banner — always visible, outside tabs
     irr_pct = r["irr"] * 100
     irr_color = "#00c97a" if irr_pct > 20 else "#f0a500" if irr_pct > 10 else "#e03c31"
-    k1, k2, k3, k4 = st.columns(4)
+    irr_bg    = "#0a2a0a"  if irr_pct > 20 else "#2a1a00"  if irr_pct > 10 else "#2a0a0a"
+    k1, k2, k3, k4 = st.columns([1.5, 1, 1, 1])
     with k1:
         st.markdown(
-            f"""<div style='background:#1a1a1a;border:1px solid #2a2a2a;border-radius:2px;padding:10px 14px'>
+            f"""<div style='background:{irr_bg};border:1px solid #2a2a2a;border-radius:2px;padding:10px 14px'>
             <div style='font-size:10px;color:#bbbbbb;text-transform:uppercase;letter-spacing:0.5px'>IRR</div>
-            <div style='font-size:32px;font-weight:700;color:{irr_color};line-height:1.1'>{irr_pct:.1f}%</div>
+            <div style='font-size:42px;font-weight:700;color:{irr_color};line-height:1.1;letter-spacing:-1px'>{irr_pct:.1f}%</div>
             </div>""",
             unsafe_allow_html=True,
         )
@@ -381,7 +384,7 @@ with right:
     st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Tabs
-    tab1, tab2, tab3, tab4 = st.tabs(["OVERVIEW", "PERFORMANCE", "ANALYSIS", "MONTE CARLO"])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(["OVERVIEW", "PERFORMANCE", "ANALYSIS", "MONTE CARLO", "IC MEMO"])
 
     # ── Tab 1: OVERVIEW ───────────────────────────────────────────────────────
     with tab1:
@@ -650,3 +653,71 @@ with right:
         fig_mc.update_xaxes(gridcolor="#1a1a1a", color="#888")
         fig_mc.update_yaxes(gridcolor="#1a1a1a", color="#888")
         st.plotly_chart(fig_mc, use_container_width=True)
+
+    # ── Tab 5: IC MEMO ────────────────────────────────────────────────────────
+    with tab5:
+
+        st.subheader("Investment Committee Summary")
+
+        if st.button("Generate IC Memo", type="primary"):
+            irr_pct = r["irr"] * 100
+            moic    = r["moic"]
+
+            if irr_pct > 20:
+                verdict       = "INVEST — Returns exceed hurdle rate"
+                verdict_color = "#2d6a4f"
+            elif irr_pct > 15:
+                verdict       = "CONDITIONAL — Returns below hurdle, monitor closely"
+                verdict_color = "#7a6000"
+            else:
+                verdict       = "PASS — Returns insufficient for risk taken"
+                verdict_color = "#8b0000"
+
+            st.markdown(f"""
+            <div style='background:#111;border:1px solid #333;padding:20px;border-radius:2px'>
+            <h3 style='color:#fff;margin-bottom:4px'>INVESTMENT COMMITTEE MEMO</h3>
+            <p style='color:#888;font-size:11px'>Generated — Base Case Analysis</p>
+
+            <div style='background:{verdict_color};padding:8px 12px;margin:12px 0;border-radius:2px'>
+            <strong style='color:#fff'>RECOMMENDATION: {verdict}</strong>
+            </div>
+
+            <h4 style='color:#bbb'>DEAL OVERVIEW</h4>
+            <p style='color:#ccc'>
+            Entry EV of <strong>${r['entry_ev']:.0f}M</strong> at <strong>{r['exit_multiple']:.1f}x EBITDA</strong>,
+            financed with <strong>{r['debt_raised']/r['entry_ev']*100:.0f}% debt</strong>
+            ({r['debt_raised']/r['entry_ebitda']:.1f}x Debt/EBITDA at entry).
+            Sponsor equity invested: <strong>${r['sponsor_equity']:.0f}M</strong>.
+            </p>
+
+            <h4 style='color:#bbb'>RETURN PROFILE</h4>
+            <p style='color:#ccc'>
+            Base case delivers <strong style='color:#00c97a'>{irr_pct:.1f}% IRR</strong>
+            and <strong>{moic:.2f}x MOIC</strong> over {r['exit_multiple']:.0f}-year hold.
+            Exit EV of <strong>${r['exit_ev']:.0f}M</strong> ({r['exit_multiple']:.1f}x exit multiple)
+            with net debt of <strong>${r['ending_debt']:.0f}M</strong> at exit.
+            </p>
+
+            <h4 style='color:#bbb'>VALUE CREATION DRIVERS</h4>
+            <p style='color:#ccc'>
+            EBITDA growth: <strong>${r['vc_ebitda_growth']:.0f}M</strong> |
+            Multiple effect: <strong>${r['vc_multiple_effect']:.0f}M</strong> |
+            Debt paydown: <strong>${r['vc_debt_paydown']:.0f}M</strong>
+            </p>
+
+            <h4 style='color:#bbb'>SCENARIO ANALYSIS</h4>
+            <p style='color:#ccc'>
+            Downside IRR: <strong style='color:#e03c31'>{r['scenarios']['Downside']['irr']*100:.1f}%</strong> |
+            Base IRR: <strong style='color:#f0a500'>{r['scenarios']['Base']['irr']*100:.1f}%</strong> |
+            Upside IRR: <strong style='color:#00c97a'>{r['scenarios']['Upside']['irr']*100:.1f}%</strong>
+            </p>
+
+            <h4 style='color:#bbb'>RISK FACTORS</h4>
+            <p style='color:#ccc'>
+            • Covenant breach probability (Monte Carlo): <strong>{r['mc_stats']['prob_covenant_breach']*100:.1f}%</strong><br>
+            • P(IRR &lt; 20% hurdle): <strong>{(1-r['mc_stats']['prob_irr_above_20'])*100:.1f}%</strong><br>
+            • Downside case equity: <strong>${r['scenarios']['Downside']['equity_at_exit']:.0f}M</strong>
+              ({r['scenarios']['Downside']['moic']:.2f}x MOIC)
+            </p>
+            </div>
+            """, unsafe_allow_html=True)
