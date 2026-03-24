@@ -124,6 +124,16 @@ def run_pipeline(
         "debt_years":     debt.schedule["Year"].tolist(),
         "debt_ending":    debt.schedule["Ending_Debt"].tolist(),
         "initial_debt":   deal.debt_raised,
+        # Cash flow waterfall
+        "cf_years":       op.projection["Year"].tolist(),
+        "cf_ebitda":      op.projection["EBITDA"].tolist(),
+        "cf_capex":       op.projection["Capex"].tolist(),
+        "cf_taxes":       op.projection["Taxes"].tolist(),
+        "cf_nwc":         op.projection["Delta_NWC"].tolist(),
+        "cf_fcf":         op.projection["FCF"].tolist(),
+        "cf_interest":    debt.schedule["Interest"].tolist(),
+        "cf_mandatory":   debt.schedule["Mandatory_Repayment"].tolist(),
+        "cf_optional":    debt.schedule["Optional_Repayment"].tolist(),
         # Scenarios & MC
         "scenarios":      scenarios,
         "mc_stats":       mc_stats,
@@ -334,7 +344,58 @@ with right:
 
     st.divider()
 
-    # Section 4 — Scenario Comparison
+    # Section 6 — Cash Flow Waterfall
+    st.subheader("Cash Flow Waterfall")
+
+    def fmt(v, negative=False):
+        """Format a float as accounting-style $M string."""
+        if negative:
+            return f"(${v:.1f}M)"
+        return f"${v:.1f}M"
+
+    years = r["cf_years"]
+    col_names = [f"Year {y}" for y in years]
+
+    residual = [
+        fcf - i - m - o
+        for fcf, i, m, o in zip(
+            r["cf_fcf"], r["cf_interest"], r["cf_mandatory"], r["cf_optional"]
+        )
+    ]
+
+    waterfall_data = {
+        "Line Item": [
+            "EBITDA",
+            "(-) Capex",
+            "(-) Taxes",
+            "(-) ΔNWC",
+            "= Free Cash Flow",
+            "(-) Interest",
+            "(-) Mandatory Repayment",
+            "(-) Optional Repayment",
+            "= Residual Cash",
+        ],
+    }
+    rows = [
+        [fmt(v)          for v in r["cf_ebitda"]],
+        [fmt(v, True)    for v in r["cf_capex"]],
+        [fmt(v, True)    for v in r["cf_taxes"]],
+        [fmt(v, True)    for v in r["cf_nwc"]],
+        [fmt(v)          for v in r["cf_fcf"]],
+        [fmt(v, True)    for v in r["cf_interest"]],
+        [fmt(v, True)    for v in r["cf_mandatory"]],
+        [fmt(v, True)    for v in r["cf_optional"]],
+        [fmt(v) if v >= 0 else fmt(abs(v), True) for v in residual],
+    ]
+    for col, vals in zip(col_names, zip(*rows)):
+        waterfall_data[col] = list(vals)
+
+    wf_df = pd.DataFrame(waterfall_data).set_index("Line Item")
+    st.dataframe(wf_df, use_container_width=True)
+
+    st.divider()
+
+    # Section 7 — Scenario Comparison
     st.subheader("Scenario Analysis")
     sc = r["scenarios"]
     scenario_df = pd.DataFrame({
