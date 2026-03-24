@@ -1,16 +1,22 @@
 # LBO Simulation Engine
 
-> A professional-grade Leveraged Buyout model built in Python —
-> simulates a full PE deal from entry to exit with scenario analysis,
-> Monte Carlo simulation, and an interactive Bloomberg-style dashboard.
+Built a full Private Equity leveraged buyout (LBO) engine in Python that
+replicates how investors evaluate deals — from entry assumptions to exit returns.
+
+The model projects financial performance, simulates debt repayment, and outputs
+key investment metrics (IRR, MOIC, equity value) across scenarios. Monte Carlo
+simulation quantifies downside risk. An interactive dashboard replicates
+real-world PE investment committee analysis.
 
 ![App Screenshot](Screenshot.png)
 
 ---
 
-## What it does
-
-Models a complete LBO transaction: given an entry EBITDA multiple, a debt structure, and a holding period, the engine projects revenues, cash flows, and debt repayment year by year — then computes exit equity value, MOIC, and IRR across base, downside, and upside scenarios. A 500-simulation Monte Carlo quantifies return dispersion and covenant breach probability. All outputs are surfaced in a real-time interactive dashboard.
+## What this demonstrates
+- Ability to model a full PE deal from scratch
+- Understanding of capital structure, leverage, and return drivers
+- Ability to translate financial models into interactive decision tools
+- Clean Python architecture — modular, separated by concern, documented
 
 ---
 
