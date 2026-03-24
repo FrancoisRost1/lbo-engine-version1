@@ -134,6 +134,17 @@ def run_pipeline(
         "cf_interest":    debt.schedule["Interest"].tolist(),
         "cf_mandatory":   debt.schedule["Mandatory_Repayment"].tolist(),
         "cf_optional":    debt.schedule["Optional_Repayment"].tolist(),
+        # Value creation bridge
+        "vc_entry_equity":    deal.entry_ev - deal.debt_raised,
+        "vc_exit_equity":     ret.equity_at_exit,
+        "vc_ebitda_growth":   (ret.exit_ebitda - deal.entry_ebitda) * ret.exit_multiple,
+        "vc_multiple_effect": deal.entry_ebitda * (ret.exit_multiple - deal.purchase_multiple),
+        "vc_debt_paydown":    deal.debt_raised - ret.ending_debt,
+        "vc_total":           (
+            (ret.exit_ebitda - deal.entry_ebitda) * ret.exit_multiple
+            + deal.entry_ebitda * (ret.exit_multiple - deal.purchase_multiple)
+            + (deal.debt_raised - ret.ending_debt)
+        ),
         # Scenarios & MC
         "scenarios":      scenarios,
         "mc_stats":       mc_stats,
@@ -286,7 +297,51 @@ with right:
 
     st.divider()
 
-    # Section 3 — Returns
+    # Section 3 — Value Creation Bridge
+    st.subheader("Value Creation Bridge")
+
+    vc_labels = ["EBITDA Growth", "Multiple Effect", "Debt Paydown"]
+    vc_values = [r["vc_ebitda_growth"], r["vc_multiple_effect"], r["vc_debt_paydown"]]
+    vc_colors = ["#1a3a5c" if v >= 0 else "#8b0000" for v in vc_values]
+
+    fig_vc = go.Figure()
+    fig_vc.add_trace(go.Bar(
+        x=vc_values,
+        y=vc_labels,
+        orientation="h",
+        marker_color=vc_colors,
+    ))
+    fig_vc.add_vline(
+        x=r["vc_entry_equity"], line_dash="dot", line_color="#666",
+        annotation_text="Entry Equity", annotation_position="top left",
+        annotation_font_color="#aaa",
+    )
+    fig_vc.add_vline(
+        x=r["vc_exit_equity"], line_dash="dot", line_color="#aaa",
+        annotation_text="Exit Equity", annotation_position="top right",
+        annotation_font_color="#aaa",
+    )
+    fig_vc.update_layout(
+        height=220,
+        margin=dict(t=20, b=20, l=130),
+        plot_bgcolor="#0a0a0a",
+        paper_bgcolor="#0a0a0a",
+        font=dict(color="#e8e8e8"),
+        showlegend=False,
+        xaxis_title="Value ($M)",
+    )
+    fig_vc.update_xaxes(gridcolor="#1a1a1a", color="#888")
+    fig_vc.update_yaxes(gridcolor="#1a1a1a", color="#888")
+    st.plotly_chart(fig_vc, use_container_width=True)
+
+    vc1, vc2, vc3 = st.columns(3)
+    vc1.metric("EBITDA Growth",   f"${r['vc_ebitda_growth']:.1f}M")
+    vc2.metric("Multiple Effect", f"${r['vc_multiple_effect']:.1f}M")
+    vc3.metric("Debt Paydown",    f"${r['vc_debt_paydown']:.1f}M")
+
+    st.divider()
+
+    # Section 4 — Returns
     st.subheader("Investor Returns")
     irr = r["irr"]
     irr_color = "#0a5c36" if irr > 0.20 else "#7a6000" if irr > 0.10 else "#8b0000"
