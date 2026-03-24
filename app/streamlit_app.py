@@ -663,14 +663,17 @@ with right:
             irr_pct = r["irr"] * 100
             moic    = r["moic"]
 
-            if irr_pct > 20:
-                verdict       = "INVEST — Returns exceed hurdle rate"
+            if irr_pct > 25:
+                verdict       = "STRONG BUY"
+                verdict_color = "#1a5c36"
+            elif irr_pct > 20:
+                verdict       = "BUY"
                 verdict_color = "#2d6a4f"
             elif irr_pct > 15:
-                verdict       = "CONDITIONAL — Returns below hurdle, monitor closely"
+                verdict       = "CONDITIONAL BUY"
                 verdict_color = "#7a6000"
             else:
-                verdict       = "PASS — Returns insufficient for risk taken"
+                verdict       = "PASS"
                 verdict_color = "#8b0000"
 
             st.markdown(f"""
@@ -692,10 +695,11 @@ with right:
 
             <h4 style='color:#bbb'>RETURN PROFILE</h4>
             <p style='color:#ccc'>
-            Base case delivers <strong style='color:#00c97a'>{irr_pct:.1f}% IRR</strong>
-            and <strong>{moic:.2f}x MOIC</strong> over {r['exit_multiple']:.0f}-year hold.
-            Exit EV of <strong>${r['exit_ev']:.0f}M</strong> ({r['exit_multiple']:.1f}x exit multiple)
-            with net debt of <strong>${r['ending_debt']:.0f}M</strong> at exit.
+            Base case:<br>
+            • IRR: <strong style='color:#00c97a'>{irr_pct:.1f}%</strong> | MOIC: <strong>{moic:.2f}x</strong><br>
+            • Exit EV: <strong>${r['exit_ev']:.0f}M</strong> ({r['exit_multiple']:.1f}x exit multiple)<br>
+            • Net Debt at Exit: <strong>${r['ending_debt']:.0f}M</strong><br>
+            • Equity at Exit: <strong>${r['equity_at_exit']:.0f}M</strong>
             </p>
 
             <h4 style='color:#bbb'>VALUE CREATION DRIVERS</h4>
@@ -718,6 +722,11 @@ with right:
             • P(IRR &lt; 20% hurdle): <strong>{(1-r['mc_stats']['prob_irr_above_20'])*100:.1f}%</strong><br>
             • Downside case equity: <strong>${r['scenarios']['Downside']['equity_at_exit']:.0f}M</strong>
               ({r['scenarios']['Downside']['moic']:.2f}x MOIC)
+            </p>
+
+            <h4 style='color:#bbb'>KEY RISK</h4>
+            <p style='color:#ccc'>
+            {"• Return heavily dependent on multiple expansion" if r['vc_multiple_effect'] > r['vc_ebitda_growth'] else "• Return driven primarily by debt paydown, limited operational improvement" if r['vc_debt_paydown'] > r['vc_ebitda_growth'] else "• Return driven by EBITDA growth — execution risk on operational targets"}
             </p>
             </div>
             """, unsafe_allow_html=True)
