@@ -34,6 +34,10 @@ FIXED = {
     "cash_sweep":       1.0,
 }
 
+# --- Sensitivity table axes ---
+SENS_EXIT_MULTIPLES  = tuple(round(6.0 + i * 0.5, 1) for i in range(13))  # 6.0 … 12.0
+SENS_LEVERAGE_RATIOS = tuple(range(30, 75, 10))                             # 30, 40, 50, 60, 70
+
 
 @st.cache_data
 def run_pipeline(
@@ -150,6 +154,62 @@ def run_pipeline(
         "mc_stats":       mc_stats,
         "mc_irr_list":    mc_irr_list,
     }
+
+
+@st.cache_data
+def run_sensitivity(
+    entry_ebitda: float,
+    purchase_multiple: float,
+    revenue_initial: float,
+    revenue_growth: float,
+    ebitda_margin: float,
+    holding_period: int,
+    exit_multiples: tuple,
+    leverage_ratios: tuple,
+) -> list:
+    """
+    Compute a 2D grid of IRR values for every (exit_multiple, leverage_ratio) pair.
+
+    Returns a 2D list [row=exit_multiple][col=leverage_ratio] of IRR percentages.
+    All other parameters are held at the values passed in (current slider state).
+    """
+    results = []
+    for exit_mult in exit_multiples:
+        row = []
+        for lev in leverage_ratios:
+            lev_ratio = lev / 100
+            deal = DealModel(
+                entry_ebitda=entry_ebitda,
+                purchase_multiple=purchase_multiple,
+                leverage_ratio=lev_ratio,
+                fee_pct=FIXED["fee_pct"],
+            )
+            op = OperatingModel(
+                revenue_initial=revenue_initial,
+                revenue_growth=revenue_growth / 100,
+                ebitda_margin=ebitda_margin / 100,
+                capex_pct=FIXED["capex_pct"],
+                nwc_pct=FIXED["nwc_pct"],
+                tax_rate=FIXED["tax_rate"],
+                holding_period=holding_period,
+            )
+            debt = DebtSchedule(
+                debt_raised=deal.debt_raised,
+                fcf_series=op.get_fcf_series(),
+                interest_rate=FIXED["interest_rate"],
+                amortization_rate=FIXED["amortization_rate"],
+                cash_sweep=FIXED["cash_sweep"],
+            )
+            ret = Returns(
+                exit_ebitda=op.get_ebitda_by_year(holding_period),
+                exit_multiple=exit_mult,
+                ending_debt=debt.get_ending_debt(holding_period),
+                sponsor_equity=deal.sponsor_equity,
+                holding_period=holding_period,
+            )
+            row.append(round(ret.irr * 100, 1))
+        results.append(row)
+    return results
 
 
 # --- Page config ---
@@ -273,6 +333,14 @@ r = run_pipeline(
     entry_ebitda, purchase_multiple, leverage_ratio,
     revenue_initial, revenue_growth, ebitda_margin,
     exit_multiple, holding_period,
+)
+
+# --- Run sensitivity grid ---
+sens_grid = run_sensitivity(
+    entry_ebitda, purchase_multiple,
+    revenue_initial, revenue_growth, ebitda_margin,
+    holding_period,
+    SENS_EXIT_MULTIPLES, SENS_LEVERAGE_RATIOS,
 )
 
 # ── RIGHT COLUMN: Results ─────────────────────────────────────────────────────
@@ -550,3 +618,32 @@ with right:
     fig_mc.update_xaxes(gridcolor="#1a1a1a", color="#888")
     fig_mc.update_yaxes(gridcolor="#1a1a1a", color="#888")
     st.plotly_chart(fig_mc, use_container_width=True)
+
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
+
+    # Section — Sensitivity Analysis
+    st.subheader("Sensitivity Analysis — IRR (%) vs Exit Multiple & Leverage")
+
+    def _irr_cell_color(val: float) -> str:
+        """Return CSS background-color string for a given IRR percentage."""
+        if val > 25:
+            bg = "#0a3d1f"
+        elif val > 20:
+            bg = "#1a5c36"
+        elif val > 15:
+            bg = "#4a5c1a"
+        elif val > 10:
+            bg = "#5c4a00"
+        else:
+            bg = "#5c1a1a"
+        return f"background-color: {bg}; color: #e8e8e8"
+
+    sens_df = pd.DataFrame(
+        sens_grid,
+        index=[f"{m:.1f}x" for m in SENS_EXIT_MULTIPLES],
+        columns=[f"{lev}% Lev" for lev in SENS_LEVERAGE_RATIOS],
+    )
+    sens_df.index.name = "Exit Multiple"
+
+    styled_sens = sens_df.style.applymap(_irr_cell_color).format("{:.1f}%")
+    st.dataframe(styled_sens, use_container_width=True)
