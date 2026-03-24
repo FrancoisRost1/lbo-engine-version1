@@ -41,7 +41,7 @@ lbo-engine/
 │   ├── returns.py           # ✅ Done — Exit EV, MOIC, IRR
 │   ├── covenants.py         # ✅ Done — Leverage & coverage breach detection
 │   ├── scenarios.py         # ✅ Done — Downside / Base / Upside
-│   ├── monte_carlo.py       # ⏳ Next — 1000+ simulations
+│   ├── monte_carlo.py       # ✅ Done — 1000+ simulations, IRR distribution
 │   ├── waterfall.py         # ⏳ Planned — Year-by-year cash flow waterfall
 │   ├── valuation.py         # ⏳ Planned — Entry & exit multiple valuation
 │   └── utils.py             # ⏳ Planned — Helpers, CSV export, formatting
@@ -61,7 +61,7 @@ lbo-engine/
 │   └── lbo_demo.ipynb
 │
 ├── app/
-│   └── streamlit_app.py     # ⏳ Planned — Interactive Streamlit UI
+│   └── streamlit_app.py     # ✅ Done — Interactive UI, dark mode, Bloomberg style
 │
 └── outputs/
     ├── base_case_results.csv
@@ -79,7 +79,7 @@ lbo-engine/
 | V1 | Scaffold + DealModel (entry deal, Sources & Uses) | ✅ Done |
 | V2 | OperatingModel + DebtSchedule + Returns (IRR/MOIC) | ✅ Done |
 | V3 | Covenants + Scenarios + Sensitivity tables | ✅ Done |
-| V4 | Monte Carlo + Streamlit app + Unit tests | ⏳ Next |
+| V4 | Monte Carlo + Streamlit app + Unit tests | ✅ Done |
 
 ---
 
@@ -193,3 +193,30 @@ streamlit
 plotly
 pytest
 ```
+
+---
+
+## Streamlit app — current sections (in order)
+
+1. Deal Summary — Entry EV, Debt, Equity, Debt/EV, Debt/EBITDA
+2. Sources & Uses — USES / SOURCES side by side
+3. Value Creation Bridge — horizontal bar chart, 3 drivers
+4. Investor Returns — MOIC + IRR (color coded)
+5. Exit Analysis — 5 metrics in one row
+6. Debt Paydown — bar chart navy dark mode
+7. Cash Flow Waterfall — accounting format table
+8. Scenario Analysis — Downside / Base / Upside table
+9. Monte Carlo — 500 sims, histogram + stats
+
+---
+
+## Next session — things to build
+
+- Top KPI banner (IRR/MOIC huge at top)
+- Compact layout (less scroll)
+- Remove +/- buttons on inputs
+- Sensitivity table (IRR vs exit multiple x leverage)
+- Better Value Creation Bridge chart
+- Charts thinner, more Excel-like
+- Downside/Base/Upside toggle
+- Single screen rule
