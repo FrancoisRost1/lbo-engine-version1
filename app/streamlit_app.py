@@ -38,6 +38,13 @@ FIXED = {
 SENS_EXIT_MULTIPLES  = tuple(round(6.0 + i * 0.5, 1) for i in range(13))  # 6.0 … 12.0
 SENS_LEVERAGE_RATIOS = tuple(range(30, 75, 10))                             # 30, 40, 50, 60, 70
 
+# --- Scenario presets ---
+SCENARIO_PRESETS = {
+    "Base":     {"revenue_growth": 8,  "ebitda_margin": 27, "exit_multiple": 10.0},
+    "Downside": {"revenue_growth": 3,  "ebitda_margin": 22, "exit_multiple": 8.0},
+    "Upside":   {"revenue_growth": 9,  "ebitda_margin": 27, "exit_multiple": 12.0},
+}
+
 
 @st.cache_data
 def run_pipeline(
@@ -314,6 +321,9 @@ left, right = st.columns([1, 2])
 
 # ── LEFT COLUMN: Sliders ──────────────────────────────────────────────────────
 with left:
+    scenario = st.radio("Scenario", ["Base", "Downside", "Upside"], horizontal=True)
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
+
     st.markdown("**DEAL PARAMETERS**")
     entry_ebitda      = st.number_input("Entry EBITDA ($M)",      min_value=10.0,  max_value=200.0, value=50.0,  step=5.0)
     purchase_multiple = st.number_input("Purchase Multiple (x)",  min_value=5.0,   max_value=20.0,  value=8.0,   step=0.5)
@@ -321,11 +331,11 @@ with left:
 
     st.markdown("**OPERATING ASSUMPTIONS**")
     revenue_initial   = st.number_input("Revenue Initial ($M)",   min_value=50,    max_value=500,   value=200,   step=10)
-    revenue_growth    = st.number_input("Revenue Growth (%)",     min_value=0,     max_value=20,    value=8,     step=1)
-    ebitda_margin     = st.number_input("EBITDA Margin (%)",      min_value=10,    max_value=50,    value=27,    step=1)
+    revenue_growth    = st.number_input("Revenue Growth (%)",     min_value=0,     max_value=20,    value=SCENARIO_PRESETS[scenario]["revenue_growth"], step=1)
+    ebitda_margin     = st.number_input("EBITDA Margin (%)",      min_value=10,    max_value=50,    value=SCENARIO_PRESETS[scenario]["ebitda_margin"],  step=1)
 
     st.markdown("**EXIT ASSUMPTIONS**")
-    exit_multiple     = st.number_input("Exit Multiple (x)",      min_value=4.0,   max_value=20.0,  value=10.0,  step=0.5)
+    exit_multiple     = st.number_input("Exit Multiple (x)",      min_value=4.0,   max_value=20.0,  value=SCENARIO_PRESETS[scenario]["exit_multiple"],  step=0.5)
     holding_period    = st.number_input("Holding Period (years)",  min_value=3,     max_value=7,     value=5,     step=1)
 
 # --- Run pipeline ---
