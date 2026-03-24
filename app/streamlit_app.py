@@ -402,44 +402,65 @@ with right:
     # Section 3 — Value Creation Bridge
     st.subheader("Value Creation Bridge")
 
-    vc_labels = ["EBITDA Growth", "Multiple Effect", "Debt Paydown"]
-    vc_values = [r["vc_ebitda_growth"], r["vc_multiple_effect"], r["vc_debt_paydown"]]
-    vc_colors = ["#1a3a5c" if v >= 0 else "#8b0000" for v in vc_values]
+    # Cumulative bases for floating bars
+    base_ebitda   = r["vc_entry_equity"]
+    base_multiple = base_ebitda + r["vc_ebitda_growth"]
+    base_debt     = base_multiple + r["vc_multiple_effect"]
+
+    def _vc_color(val):
+        return "#2d6a4f" if val >= 0 else "#8b0000"
 
     fig_vc = go.Figure()
+
+    # Bar 1 — Entry Equity (solid)
     fig_vc.add_trace(go.Bar(
-        x=vc_values,
-        y=vc_labels,
-        orientation="h",
-        marker_color=vc_colors,
+        x=["Entry Equity"], y=[r["vc_entry_equity"]],
+        base=[0],
+        marker_color="#1a3a5c",
+        text=[f"${r['vc_entry_equity']:.0f}M"], textposition="outside",
     ))
-    fig_vc.add_vline(
-        x=r["vc_entry_equity"], line_dash="dot", line_color="#666",
-        annotation_text="Entry Equity", annotation_position="top left",
-        annotation_font_color="#aaa",
-    )
-    fig_vc.add_vline(
-        x=r["vc_exit_equity"], line_dash="dot", line_color="#aaa",
-        annotation_text="Exit Equity", annotation_position="top right",
-        annotation_font_color="#aaa",
-    )
+    # Bar 2 — EBITDA Growth (floating)
+    fig_vc.add_trace(go.Bar(
+        x=["EBITDA Growth"], y=[r["vc_ebitda_growth"]],
+        base=[base_ebitda],
+        marker_color=_vc_color(r["vc_ebitda_growth"]),
+        text=[f"${r['vc_ebitda_growth']:+.0f}M"], textposition="outside",
+    ))
+    # Bar 3 — Multiple Effect (floating)
+    fig_vc.add_trace(go.Bar(
+        x=["Multiple Effect"], y=[r["vc_multiple_effect"]],
+        base=[base_multiple],
+        marker_color=_vc_color(r["vc_multiple_effect"]),
+        text=[f"${r['vc_multiple_effect']:+.0f}M"], textposition="outside",
+    ))
+    # Bar 4 — Debt Paydown (floating, always positive)
+    fig_vc.add_trace(go.Bar(
+        x=["Debt Paydown"], y=[r["vc_debt_paydown"]],
+        base=[base_debt],
+        marker_color="#2d6a4f",
+        text=[f"${r['vc_debt_paydown']:+.0f}M"], textposition="outside",
+    ))
+    # Bar 5 — Exit Equity (solid)
+    fig_vc.add_trace(go.Bar(
+        x=["Exit Equity"], y=[r["vc_exit_equity"]],
+        base=[0],
+        marker_color="#1a3a5c",
+        text=[f"${r['vc_exit_equity']:.0f}M"], textposition="outside",
+    ))
+
     fig_vc.update_layout(
-        height=220,
-        margin=dict(t=20, b=20, l=130),
+        height=280,
+        margin=dict(t=30, b=20),
         plot_bgcolor="#0a0a0a",
         paper_bgcolor="#0a0a0a",
         font=dict(color="#e8e8e8"),
         showlegend=False,
-        xaxis_title="Value ($M)",
+        yaxis_title="Equity Value ($M)",
+        barmode="overlay",
     )
     fig_vc.update_xaxes(gridcolor="#1a1a1a", color="#888")
     fig_vc.update_yaxes(gridcolor="#1a1a1a", color="#888")
     st.plotly_chart(fig_vc, use_container_width=True)
-
-    vc1, vc2, vc3 = st.columns(3)
-    vc1.metric("EBITDA Growth",   f"${r['vc_ebitda_growth']:.1f}M")
-    vc2.metric("Multiple Effect", f"${r['vc_multiple_effect']:.1f}M")
-    vc3.metric("Debt Paydown",    f"${r['vc_debt_paydown']:.1f}M")
 
     st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
