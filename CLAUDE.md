@@ -61,7 +61,7 @@ lbo-engine/
 │   └── lbo_demo.ipynb
 │
 ├── app/
-│   └── streamlit_app.py     # ✅ Done — Interactive UI, dark mode, Bloomberg style
+│   └── streamlit_app.py     # ✅ Done — Interactive UI, dark mode, Bloomberg style, 5 tabs
 │
 └── outputs/
     ├── base_case_results.csv
@@ -210,13 +210,20 @@ pytest
 
 ---
 
-## Next session — things to build
+## Current app features (complete)
 
-- Top KPI banner (IRR/MOIC huge at top)
-- Compact layout (less scroll)
-- Remove +/- buttons on inputs
-- Sensitivity table (IRR vs exit multiple x leverage)
-- Better Value Creation Bridge chart
-- Charts thinner, more Excel-like
-- Downside/Base/Upside toggle
-- Single screen rule
+- Dark mode Bloomberg terminal design
+- KPI banner (IRR 42px dominant, color-coded)
+- Scenario toggle Base / Downside / Upside
+- 5 tabs: OVERVIEW / PERFORMANCE / ANALYSIS / MONTE CARLO / IC MEMO
+- Value Creation Bridge waterfall chart
+- Cash Flow Waterfall table (accounting format)
+- Sensitivity table (IRR vs exit multiple × leverage, color-coded)
+- Monte Carlo histogram with hurdle line
+- IC Memo generator (STRONG BUY / BUY / CONDITIONAL BUY / PASS)
+- Auto Key Risk detection from VC drivers
+
+## Remaining to do
+
+- README.md final version (with screenshots)
+- Unit tests (tests/ folder)
