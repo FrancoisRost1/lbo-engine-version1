@@ -232,6 +232,16 @@ section[data-testid="stSidebar"],
 [data-testid="column"] {
     background-color: #0a0a0a !important;
 }
+
+/* === COMPACT SPACING === */
+.element-container { margin-bottom: 0.2rem !important; }
+.stMetric { padding: 6px 10px !important; }
+[data-testid="stVerticalBlock"] { gap: 0.3rem !important; }
+
+/* === HIDE +/- STEPPER BUTTONS === */
+[data-testid="stNumberInput"] button {
+    display: none !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -268,6 +278,30 @@ r = run_pipeline(
 # ── RIGHT COLUMN: Results ─────────────────────────────────────────────────────
 with right:
 
+    # KPI Banner — top of page, most visible section
+    irr_pct = r["irr"] * 100
+    irr_color = "#00c97a" if irr_pct > 20 else "#f0a500" if irr_pct > 10 else "#e03c31"
+    k1, k2, k3, k4 = st.columns(4)
+    with k1:
+        st.markdown(
+            f"""<div style='background:#1a1a1a;border:1px solid #2a2a2a;border-radius:2px;padding:10px 14px'>
+            <div style='font-size:10px;color:#bbbbbb;text-transform:uppercase;letter-spacing:0.5px'>IRR</div>
+            <div style='font-size:32px;font-weight:700;color:{irr_color};line-height:1.1'>{irr_pct:.1f}%</div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+    with k2:
+        st.markdown(
+            f"""<div style='background:#1a1a1a;border:1px solid #2a2a2a;border-radius:2px;padding:10px 14px'>
+            <div style='font-size:10px;color:#bbbbbb;text-transform:uppercase;letter-spacing:0.5px'>MOIC</div>
+            <div style='font-size:24px;font-weight:700;color:#ffffff;line-height:1.1'>{r['moic']:.2f}x</div>
+            </div>""",
+            unsafe_allow_html=True,
+        )
+    k3.metric("Exit EV", f"${r['exit_ev']:.0f}M")
+    k4.metric("Equity at Exit", f"${r['equity_at_exit']:.0f}M")
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
+
     # Section 1 — Deal Summary
     st.subheader("Deal Summary")
     c1, c2, c3, c4, c5 = st.columns(5)
@@ -277,7 +311,7 @@ with right:
     c4.metric("Debt / EV",      f"{r['debt_raised'] / r['entry_ev'] * 100:.0f}%")
     c5.metric("Debt / EBITDA",  f"{r['debt_raised'] / r['entry_ebitda']:.1f}x")
 
-    st.divider()
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Section 2 — Sources & Uses
     st.subheader("Sources & Uses")
@@ -295,7 +329,7 @@ with right:
         st.markdown("---")
         st.markdown(f"**Total Sources** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${r['total_uses']:.1f}M**")
 
-    st.divider()
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Section 3 — Value Creation Bridge
     st.subheader("Value Creation Bridge")
@@ -339,7 +373,7 @@ with right:
     vc2.metric("Multiple Effect", f"${r['vc_multiple_effect']:.1f}M")
     vc3.metric("Debt Paydown",    f"${r['vc_debt_paydown']:.1f}M")
 
-    st.divider()
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Section 4 — Returns
     st.subheader("Investor Returns")
@@ -354,7 +388,7 @@ with right:
             unsafe_allow_html=True,
         )
 
-    st.divider()
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Section 4 — Exit Analysis
     st.subheader("Exit Analysis")
@@ -365,7 +399,7 @@ with right:
     e4.metric("Net Debt at Exit ($M)", f"${r['ending_debt']:.1f}M")
     e5.metric("Equity at Exit ($M)", f"${r['equity_at_exit']:.1f}M")
 
-    st.divider()
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Section 5 — Debt Paydown Chart
     st.subheader("Debt Paydown")
@@ -397,7 +431,7 @@ with right:
     fig_debt.update_yaxes(gridcolor="#1a1a1a", color="#888")
     st.plotly_chart(fig_debt, use_container_width=True)
 
-    st.divider()
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Section 6 — Cash Flow Waterfall
     st.subheader("Cash Flow Waterfall")
@@ -448,7 +482,7 @@ with right:
     wf_df = pd.DataFrame(waterfall_data).set_index("Line Item")
     st.dataframe(wf_df, use_container_width=True)
 
-    st.divider()
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Section 7 — Scenario Comparison
     st.subheader("Scenario Analysis")
@@ -479,7 +513,7 @@ with right:
     }).set_index("Metric")
     st.dataframe(scenario_df, use_container_width=True)
 
-    st.divider()
+    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Section 5 — Monte Carlo
     st.subheader("Monte Carlo Analysis (500 simulations)")
