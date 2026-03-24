@@ -32,6 +32,7 @@ lbo-engine/
 ├── requirements.txt
 ├── main.py                  # Orchestrator only — no financial logic here
 ├── config.yaml              # All base case assumptions live here
+├── push.sh
 │
 ├── lbo/
 │   ├── __init__.py
@@ -41,33 +42,10 @@ lbo-engine/
 │   ├── returns.py           # ✅ Done — Exit EV, MOIC, IRR
 │   ├── covenants.py         # ✅ Done — Leverage & coverage breach detection
 │   ├── scenarios.py         # ✅ Done — Downside / Base / Upside
-│   ├── monte_carlo.py       # ✅ Done — 1000+ simulations, IRR distribution
-│   ├── waterfall.py         # ⏳ Planned — Year-by-year cash flow waterfall
-│   ├── valuation.py         # ⏳ Planned — Entry & exit multiple valuation
-│   └── utils.py             # ⏳ Planned — Helpers, CSV export, formatting
+│   └── monte_carlo.py       # ✅ Done — 1000+ simulations, IRR distribution
 │
-├── data/
-│   ├── base_case.json
-│   ├── upside_case.json
-│   └── downside_case.json
-│
-├── tests/
-│   ├── test_deal_model.py
-│   ├── test_debt_schedule.py
-│   ├── test_returns.py
-│   └── test_covenants.py
-│
-├── notebooks/
-│   └── lbo_demo.ipynb
-│
-├── app/
-│   └── streamlit_app.py     # ✅ Done — Interactive UI, dark mode, Bloomberg style, 5 tabs
-│
-└── outputs/
-    ├── base_case_results.csv
-    ├── debt_schedule.csv
-    ├── sensitivity_table.csv
-    └── monte_carlo_summary.csv
+└── app/
+    └── streamlit_app.py     # ✅ Done — Bloomberg dark mode, 5 tabs, IC Memo
 ```
 
 ---
@@ -79,7 +57,7 @@ lbo-engine/
 | V1 | Scaffold + DealModel (entry deal, Sources & Uses) | ✅ Done |
 | V2 | OperatingModel + DebtSchedule + Returns (IRR/MOIC) | ✅ Done |
 | V3 | Covenants + Scenarios + Sensitivity tables | ✅ Done |
-| V4 | Monte Carlo + Streamlit app + Unit tests | ✅ Done |
+| V4 | Monte Carlo + Streamlit app | ✅ Done |
 
 ---
 
@@ -210,20 +188,21 @@ pytest
 
 ---
 
-## Current app features (complete)
+## Project status — COMPLETE
 
-- Dark mode Bloomberg terminal design
-- KPI banner (IRR 42px dominant, color-coded)
-- Scenario toggle Base / Downside / Upside
-- 5 tabs: OVERVIEW / PERFORMANCE / ANALYSIS / MONTE CARLO / IC MEMO
-- Value Creation Bridge waterfall chart
-- Cash Flow Waterfall table (accounting format)
-- Sensitivity table (IRR vs exit multiple × leverage, color-coded)
-- Monte Carlo histogram with hurdle line
-- IC Memo generator (STRONG BUY / BUY / CONDITIONAL BUY / PASS)
-- Auto Key Risk detection from VC drivers
+All modules built and deployed. Repo live on GitHub.
+github.com/FrancoisRost1/lbo-engine-version1
 
-## Remaining to do
+## Streamlit app — 5 tabs
 
-- README.md final version (with screenshots)
+1. OVERVIEW — Deal Summary, Sources & Uses, Returns, Exit Analysis
+2. PERFORMANCE — Value Creation Bridge, Debt Paydown, Cash Flow Waterfall
+3. ANALYSIS — Scenario Analysis, Sensitivity Table
+4. MONTE CARLO — Stats + histogram
+5. IC MEMO — Auto IC memo generator (STRONG BUY / BUY / CONDITIONAL BUY / PASS)
+
+## If continuing this project
+
 - Unit tests (tests/ folder)
+- Demo video 60s
+- Deploy on Streamlit Cloud
