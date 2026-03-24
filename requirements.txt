@@ -1,6 +1,7 @@
-pandas
-numpy
-numpy-financial
-pyyaml
-streamlit
-plotly
+pandas==2.2.0
+numpy==1.26.4
+numpy-financial==1.0.0
+pyyaml==6.0.1
+streamlit==1.32.0
+plotly==5.19.0
+altair==4.2.2
