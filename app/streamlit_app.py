@@ -356,7 +356,7 @@ sens_grid = run_sensitivity(
 # ── RIGHT COLUMN: Results ─────────────────────────────────────────────────────
 with right:
 
-    # KPI Banner — top of page, most visible section
+    # KPI Banner — always visible, outside tabs
     irr_pct = r["irr"] * 100
     irr_color = "#00c97a" if irr_pct > 20 else "#f0a500" if irr_pct > 10 else "#e03c31"
     k1, k2, k3, k4 = st.columns(4)
@@ -380,301 +380,273 @@ with right:
     k4.metric("Equity at Exit", f"${r['equity_at_exit']:.0f}M")
     st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
-    # Section 1 — Deal Summary
-    st.subheader("Deal Summary")
-    c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("Entry EV",       f"${r['entry_ev']:.0f}M")
-    c2.metric("Debt Raised",    f"${r['debt_raised']:.0f}M")
-    c3.metric("Sponsor Equity", f"${r['sponsor_equity']:.0f}M")
-    c4.metric("Debt / EV",      f"{r['debt_raised'] / r['entry_ev'] * 100:.0f}%")
-    c5.metric("Debt / EBITDA",  f"{r['debt_raised'] / r['entry_ebitda']:.1f}x")
+    # Tabs
+    tab1, tab2, tab3, tab4 = st.tabs(["OVERVIEW", "PERFORMANCE", "ANALYSIS", "MONTE CARLO"])
 
-    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
+    # ── Tab 1: OVERVIEW ───────────────────────────────────────────────────────
+    with tab1:
 
-    # Section 2 — Sources & Uses
-    st.subheader("Sources & Uses")
-    uses_col, sources_col = st.columns(2)
-    with uses_col:
-        st.markdown("**USES**")
-        st.markdown(f"Purchase Price &nbsp;&nbsp;&nbsp;&nbsp; **${r['entry_ev']:.1f}M**")
-        st.markdown(f"Transaction Fees &nbsp;&nbsp; **${r['fees']:.1f}M**")
-        st.markdown("---")
-        st.markdown(f"**Total Uses** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${r['total_uses']:.1f}M**")
-    with sources_col:
-        st.markdown("**SOURCES**")
-        st.markdown(f"Debt Raised &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${r['debt_raised']:.1f}M**")
-        st.markdown(f"Sponsor Equity &nbsp;&nbsp;&nbsp;&nbsp; **${r['sponsor_equity']:.1f}M**")
-        st.markdown("---")
-        st.markdown(f"**Total Sources** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${r['total_uses']:.1f}M**")
+        # Deal Summary
+        st.subheader("Deal Summary")
+        c1, c2, c3, c4, c5 = st.columns(5)
+        c1.metric("Entry EV",       f"${r['entry_ev']:.0f}M")
+        c2.metric("Debt Raised",    f"${r['debt_raised']:.0f}M")
+        c3.metric("Sponsor Equity", f"${r['sponsor_equity']:.0f}M")
+        c4.metric("Debt / EV",      f"{r['debt_raised'] / r['entry_ev'] * 100:.0f}%")
+        c5.metric("Debt / EBITDA",  f"{r['debt_raised'] / r['entry_ebitda']:.1f}x")
 
-    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
-    # Section 3 — Value Creation Bridge
-    st.subheader("Value Creation Bridge")
+        # Sources & Uses
+        st.subheader("Sources & Uses")
+        uses_col, sources_col = st.columns(2)
+        with uses_col:
+            st.markdown("**USES**")
+            st.markdown(f"Purchase Price &nbsp;&nbsp;&nbsp;&nbsp; **${r['entry_ev']:.1f}M**")
+            st.markdown(f"Transaction Fees &nbsp;&nbsp; **${r['fees']:.1f}M**")
+            st.markdown("---")
+            st.markdown(f"**Total Uses** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${r['total_uses']:.1f}M**")
+        with sources_col:
+            st.markdown("**SOURCES**")
+            st.markdown(f"Debt Raised &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${r['debt_raised']:.1f}M**")
+            st.markdown(f"Sponsor Equity &nbsp;&nbsp;&nbsp;&nbsp; **${r['sponsor_equity']:.1f}M**")
+            st.markdown("---")
+            st.markdown(f"**Total Sources** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${r['total_uses']:.1f}M**")
 
-    # Cumulative bases for floating bars
-    base_ebitda   = r["vc_entry_equity"]
-    base_multiple = base_ebitda + r["vc_ebitda_growth"]
-    base_debt     = base_multiple + r["vc_multiple_effect"]
+        st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
-    def _vc_color(val):
-        return "#2d6a4f" if val >= 0 else "#8b0000"
+        # Investor Returns
+        st.subheader("Investor Returns")
+        irr = r["irr"]
+        irr_color_sec = "#0a5c36" if irr > 0.20 else "#7a6000" if irr > 0.10 else "#8b0000"
+        rc1, rc2 = st.columns(2)
+        rc1.metric("MOIC", f"{r['moic']:.2f}x")
+        with rc2:
+            st.markdown("**IRR**")
+            st.markdown(
+                f"<h2 style='color:{irr_color_sec}; margin-top:0'>{irr*100:.1f}%</h2>",
+                unsafe_allow_html=True,
+            )
 
-    fig_vc = go.Figure()
+        st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
-    # Bar 1 — Entry Equity (solid)
-    fig_vc.add_trace(go.Bar(
-        x=["Entry Equity"], y=[r["vc_entry_equity"]],
-        base=[0],
-        marker_color="#1a3a5c",
-        text=[f"${r['vc_entry_equity']:.0f}M"], textposition="outside",
-    ))
-    # Bar 2 — EBITDA Growth (floating)
-    fig_vc.add_trace(go.Bar(
-        x=["EBITDA Growth"], y=[r["vc_ebitda_growth"]],
-        base=[base_ebitda],
-        marker_color=_vc_color(r["vc_ebitda_growth"]),
-        text=[f"${r['vc_ebitda_growth']:+.0f}M"], textposition="outside",
-    ))
-    # Bar 3 — Multiple Effect (floating)
-    fig_vc.add_trace(go.Bar(
-        x=["Multiple Effect"], y=[r["vc_multiple_effect"]],
-        base=[base_multiple],
-        marker_color=_vc_color(r["vc_multiple_effect"]),
-        text=[f"${r['vc_multiple_effect']:+.0f}M"], textposition="outside",
-    ))
-    # Bar 4 — Debt Paydown (floating, always positive)
-    fig_vc.add_trace(go.Bar(
-        x=["Debt Paydown"], y=[r["vc_debt_paydown"]],
-        base=[base_debt],
-        marker_color="#2d6a4f",
-        text=[f"${r['vc_debt_paydown']:+.0f}M"], textposition="outside",
-    ))
-    # Bar 5 — Exit Equity (solid)
-    fig_vc.add_trace(go.Bar(
-        x=["Exit Equity"], y=[r["vc_exit_equity"]],
-        base=[0],
-        marker_color="#1a3a5c",
-        text=[f"${r['vc_exit_equity']:.0f}M"], textposition="outside",
-    ))
+        # Exit Analysis
+        st.subheader("Exit Analysis")
+        e1, e2, e3, e4, e5 = st.columns(5)
+        e1.metric("Exit EBITDA ($M)",      f"${r['exit_ebitda']:.1f}M")
+        e2.metric("Exit Multiple (x)",     f"{r['exit_multiple']:.1f}x")
+        e3.metric("Exit EV ($M)",          f"${r['exit_ev']:.1f}M")
+        e4.metric("Net Debt at Exit ($M)", f"${r['ending_debt']:.1f}M")
+        e5.metric("Equity at Exit ($M)",   f"${r['equity_at_exit']:.1f}M")
 
-    fig_vc.update_layout(
-        height=280,
-        margin=dict(t=30, b=20),
-        plot_bgcolor="#0a0a0a",
-        paper_bgcolor="#0a0a0a",
-        font=dict(color="#e8e8e8"),
-        showlegend=False,
-        yaxis_title="Equity Value ($M)",
-        barmode="overlay",
-    )
-    fig_vc.update_xaxes(gridcolor="#1a1a1a", color="#888")
-    fig_vc.update_yaxes(gridcolor="#1a1a1a", color="#888")
-    st.plotly_chart(fig_vc, use_container_width=True)
+    # ── Tab 2: PERFORMANCE ────────────────────────────────────────────────────
+    with tab2:
 
-    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
+        # Value Creation Bridge
+        st.subheader("Value Creation Bridge")
 
-    # Section 4 — Returns
-    st.subheader("Investor Returns")
-    irr = r["irr"]
-    irr_color = "#0a5c36" if irr > 0.20 else "#7a6000" if irr > 0.10 else "#8b0000"
-    rc1, rc2 = st.columns(2)
-    rc1.metric("MOIC", f"{r['moic']:.2f}x")
-    with rc2:
-        st.markdown(f"**IRR**")
-        st.markdown(
-            f"<h2 style='color:{irr_color}; margin-top:0'>{irr*100:.1f}%</h2>",
-            unsafe_allow_html=True,
+        base_ebitda   = r["vc_entry_equity"]
+        base_multiple = base_ebitda + r["vc_ebitda_growth"]
+        base_debt     = base_multiple + r["vc_multiple_effect"]
+
+        def _vc_color(val):
+            return "#2d6a4f" if val >= 0 else "#8b0000"
+
+        fig_vc = go.Figure()
+        fig_vc.add_trace(go.Bar(
+            x=["Entry Equity"], y=[r["vc_entry_equity"]],
+            base=[0], marker_color="#1a3a5c",
+            text=[f"${r['vc_entry_equity']:.0f}M"], textposition="outside",
+        ))
+        fig_vc.add_trace(go.Bar(
+            x=["EBITDA Growth"], y=[r["vc_ebitda_growth"]],
+            base=[base_ebitda], marker_color=_vc_color(r["vc_ebitda_growth"]),
+            text=[f"${r['vc_ebitda_growth']:+.0f}M"], textposition="outside",
+        ))
+        fig_vc.add_trace(go.Bar(
+            x=["Multiple Effect"], y=[r["vc_multiple_effect"]],
+            base=[base_multiple], marker_color=_vc_color(r["vc_multiple_effect"]),
+            text=[f"${r['vc_multiple_effect']:+.0f}M"], textposition="outside",
+        ))
+        fig_vc.add_trace(go.Bar(
+            x=["Debt Paydown"], y=[r["vc_debt_paydown"]],
+            base=[base_debt], marker_color="#2d6a4f",
+            text=[f"${r['vc_debt_paydown']:+.0f}M"], textposition="outside",
+        ))
+        fig_vc.add_trace(go.Bar(
+            x=["Exit Equity"], y=[r["vc_exit_equity"]],
+            base=[0], marker_color="#1a3a5c",
+            text=[f"${r['vc_exit_equity']:.0f}M"], textposition="outside",
+        ))
+        fig_vc.update_layout(
+            height=280, margin=dict(t=30, b=20),
+            plot_bgcolor="#0a0a0a", paper_bgcolor="#0a0a0a",
+            font=dict(color="#e8e8e8"), showlegend=False,
+            yaxis_title="Equity Value ($M)", barmode="overlay",
         )
+        fig_vc.update_xaxes(gridcolor="#1a1a1a", color="#888")
+        fig_vc.update_yaxes(gridcolor="#1a1a1a", color="#888")
+        st.plotly_chart(fig_vc, use_container_width=True)
 
-    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
+        st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
-    # Section 4 — Exit Analysis
-    st.subheader("Exit Analysis")
-    e1, e2, e3, e4, e5 = st.columns(5)
-    e1.metric("Exit EBITDA ($M)",    f"${r['exit_ebitda']:.1f}M")
-    e2.metric("Exit Multiple (x)",   f"{r['exit_multiple']:.1f}x")
-    e3.metric("Exit EV ($M)",        f"${r['exit_ev']:.1f}M")
-    e4.metric("Net Debt at Exit ($M)", f"${r['ending_debt']:.1f}M")
-    e5.metric("Equity at Exit ($M)", f"${r['equity_at_exit']:.1f}M")
-
-    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
-
-    # Section 5 — Debt Paydown Chart
-    st.subheader("Debt Paydown")
-    fig_debt = go.Figure()
-    fig_debt.add_trace(go.Bar(
-        x=r["debt_years"],
-        y=r["debt_ending"],
-        name="Ending Debt",
-        marker_color="#1a3a5c",
-    ))
-    fig_debt.add_hline(
-        y=r["initial_debt"],
-        line_dash="dot",
-        line_color="#444",
-        annotation_text=f"Initial Debt ${r['initial_debt']:.0f}M",
-        annotation_position="top right",
-    )
-    fig_debt.update_layout(
-        xaxis_title="Year",
-        yaxis_title="Ending Debt ($M)",
-        height=280,
-        margin=dict(t=20, b=20),
-        showlegend=False,
-        plot_bgcolor="#0a0a0a",
-        paper_bgcolor="#0a0a0a",
-        font=dict(color="#e8e8e8"),
-    )
-    fig_debt.update_xaxes(gridcolor="#1a1a1a", color="#888")
-    fig_debt.update_yaxes(gridcolor="#1a1a1a", color="#888")
-    st.plotly_chart(fig_debt, use_container_width=True)
-
-    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
-
-    # Section 6 — Cash Flow Waterfall
-    st.subheader("Cash Flow Waterfall")
-
-    def fmt(v, negative=False):
-        """Format a float as accounting-style $M string."""
-        if negative:
-            return f"(${v:.1f}M)"
-        return f"${v:.1f}M"
-
-    years = r["cf_years"]
-    col_names = [f"Year {y}" for y in years]
-
-    residual = [
-        fcf - i - m - o
-        for fcf, i, m, o in zip(
-            r["cf_fcf"], r["cf_interest"], r["cf_mandatory"], r["cf_optional"]
+        # Debt Paydown
+        st.subheader("Debt Paydown")
+        fig_debt = go.Figure()
+        fig_debt.add_trace(go.Bar(
+            x=r["debt_years"], y=r["debt_ending"],
+            name="Ending Debt", marker_color="#1a3a5c",
+        ))
+        fig_debt.add_hline(
+            y=r["initial_debt"], line_dash="dot", line_color="#444",
+            annotation_text=f"Initial Debt ${r['initial_debt']:.0f}M",
+            annotation_position="top right",
         )
-    ]
+        fig_debt.update_layout(
+            xaxis_title="Year", yaxis_title="Ending Debt ($M)",
+            height=280, margin=dict(t=20, b=20), showlegend=False,
+            plot_bgcolor="#0a0a0a", paper_bgcolor="#0a0a0a",
+            font=dict(color="#e8e8e8"),
+        )
+        fig_debt.update_xaxes(gridcolor="#1a1a1a", color="#888")
+        fig_debt.update_yaxes(gridcolor="#1a1a1a", color="#888")
+        st.plotly_chart(fig_debt, use_container_width=True)
 
-    waterfall_data = {
-        "Line Item": [
-            "EBITDA",
-            "(-) Capex",
-            "(-) Taxes",
-            "(-) ΔNWC",
-            "= Free Cash Flow",
-            "(-) Interest",
-            "(-) Mandatory Repayment",
-            "(-) Optional Repayment",
-            "= Residual Cash",
-        ],
-    }
-    rows = [
-        [fmt(v)          for v in r["cf_ebitda"]],
-        [fmt(v, True)    for v in r["cf_capex"]],
-        [fmt(v, True)    for v in r["cf_taxes"]],
-        [fmt(v, True)    for v in r["cf_nwc"]],
-        [fmt(v)          for v in r["cf_fcf"]],
-        [fmt(v, True)    for v in r["cf_interest"]],
-        [fmt(v, True)    for v in r["cf_mandatory"]],
-        [fmt(v, True)    for v in r["cf_optional"]],
-        [fmt(v) if v >= 0 else fmt(abs(v), True) for v in residual],
-    ]
-    for col, vals in zip(col_names, zip(*rows)):
-        waterfall_data[col] = list(vals)
+        st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
-    wf_df = pd.DataFrame(waterfall_data).set_index("Line Item")
-    st.dataframe(wf_df, use_container_width=True)
+        # Cash Flow Waterfall
+        st.subheader("Cash Flow Waterfall")
 
-    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
+        def fmt(v, negative=False):
+            """Format a float as accounting-style $M string."""
+            if negative:
+                return f"(${v:.1f}M)"
+            return f"${v:.1f}M"
 
-    # Section 7 — Scenario Comparison
-    st.subheader("Scenario Analysis")
-    sc = r["scenarios"]
-    scenario_df = pd.DataFrame({
-        "Metric": ["Exit EV ($M)", "Equity at Exit ($M)", "MOIC (x)", "IRR (%)", "Covenant Breach"],
-        "Downside": [
-            f"{sc['Downside']['exit_ev']:.1f}",
-            f"{sc['Downside']['equity_at_exit']:.1f}",
-            f"{sc['Downside']['moic']:.2f}x",
-            f"{sc['Downside']['irr']*100:.1f}%",
-            "⚠ YES" if sc["Downside"]["any_covenant_breach"] else "NO",
-        ],
-        "Base": [
-            f"{sc['Base']['exit_ev']:.1f}",
-            f"{sc['Base']['equity_at_exit']:.1f}",
-            f"{sc['Base']['moic']:.2f}x",
-            f"{sc['Base']['irr']*100:.1f}%",
-            "⚠ YES" if sc["Base"]["any_covenant_breach"] else "NO",
-        ],
-        "Upside": [
-            f"{sc['Upside']['exit_ev']:.1f}",
-            f"{sc['Upside']['equity_at_exit']:.1f}",
-            f"{sc['Upside']['moic']:.2f}x",
-            f"{sc['Upside']['irr']*100:.1f}%",
-            "⚠ YES" if sc["Upside"]["any_covenant_breach"] else "NO",
-        ],
-    }).set_index("Metric")
-    st.dataframe(scenario_df, use_container_width=True)
+        years = r["cf_years"]
+        col_names = [f"Year {y}" for y in years]
 
-    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
+        residual = [
+            fcf - i - m - o
+            for fcf, i, m, o in zip(
+                r["cf_fcf"], r["cf_interest"], r["cf_mandatory"], r["cf_optional"]
+            )
+        ]
 
-    # Section 5 — Monte Carlo
-    st.subheader("Monte Carlo Analysis (500 simulations)")
-    ms = r["mc_stats"]
-    m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric("Mean IRR",    f"{ms['mean_irr']*100:.1f}%")
-    m2.metric("Median IRR",  f"{ms['median_irr']*100:.1f}%")
-    m3.metric("P5 / P95",   f"{ms['p5_irr']*100:.1f}% / {ms['p95_irr']*100:.1f}%")
-    m4.metric("P(IRR>20%)", f"{ms['prob_irr_above_20']*100:.1f}%")
-    m5.metric("P(Breach)",  f"{ms['prob_covenant_breach']*100:.1f}%")
+        waterfall_data = {
+            "Line Item": [
+                "EBITDA", "(-) Capex", "(-) Taxes", "(-) ΔNWC",
+                "= Free Cash Flow", "(-) Interest",
+                "(-) Mandatory Repayment", "(-) Optional Repayment", "= Residual Cash",
+            ],
+        }
+        rows = [
+            [fmt(v)       for v in r["cf_ebitda"]],
+            [fmt(v, True) for v in r["cf_capex"]],
+            [fmt(v, True) for v in r["cf_taxes"]],
+            [fmt(v, True) for v in r["cf_nwc"]],
+            [fmt(v)       for v in r["cf_fcf"]],
+            [fmt(v, True) for v in r["cf_interest"]],
+            [fmt(v, True) for v in r["cf_mandatory"]],
+            [fmt(v, True) for v in r["cf_optional"]],
+            [fmt(v) if v >= 0 else fmt(abs(v), True) for v in residual],
+        ]
+        for col, vals in zip(col_names, zip(*rows)):
+            waterfall_data[col] = list(vals)
 
-    fig_mc = go.Figure()
-    fig_mc.add_trace(go.Histogram(
-        x=r["mc_irr_list"],
-        nbinsx=40,
-        name="IRR",
-        marker_color="#1a3a5c",
-        opacity=0.8,
-    ))
-    fig_mc.add_vline(x=ms["mean_irr"] * 100,  line_dash="dash", line_color="white",
-                     annotation_text="Mean", annotation_position="top left")
-    fig_mc.add_vline(x=20, line_dash="dot", line_color="orange",
-                     annotation_text="20% hurdle", annotation_position="top right")
-    fig_mc.update_layout(
-        xaxis_title="IRR (%)",
-        yaxis_title="Count",
-        height=280,
-        margin=dict(t=20, b=20),
-        showlegend=False,
-        plot_bgcolor="#0a0a0a",
-        paper_bgcolor="#0a0a0a",
-        font=dict(color="#e8e8e8"),
-    )
-    fig_mc.update_xaxes(gridcolor="#1a1a1a", color="#888")
-    fig_mc.update_yaxes(gridcolor="#1a1a1a", color="#888")
-    st.plotly_chart(fig_mc, use_container_width=True)
+        wf_df = pd.DataFrame(waterfall_data).set_index("Line Item")
+        st.dataframe(wf_df, use_container_width=True)
 
-    st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
+    # ── Tab 3: ANALYSIS ───────────────────────────────────────────────────────
+    with tab3:
 
-    # Section — Sensitivity Analysis
-    st.subheader("Sensitivity Analysis — IRR (%) vs Exit Multiple & Leverage")
+        # Scenario Analysis
+        st.subheader("Scenario Analysis")
+        sc = r["scenarios"]
+        scenario_df = pd.DataFrame({
+            "Metric": ["Exit EV ($M)", "Equity at Exit ($M)", "MOIC (x)", "IRR (%)", "Covenant Breach"],
+            "Downside": [
+                f"{sc['Downside']['exit_ev']:.1f}",
+                f"{sc['Downside']['equity_at_exit']:.1f}",
+                f"{sc['Downside']['moic']:.2f}x",
+                f"{sc['Downside']['irr']*100:.1f}%",
+                "⚠ YES" if sc["Downside"]["any_covenant_breach"] else "NO",
+            ],
+            "Base": [
+                f"{sc['Base']['exit_ev']:.1f}",
+                f"{sc['Base']['equity_at_exit']:.1f}",
+                f"{sc['Base']['moic']:.2f}x",
+                f"{sc['Base']['irr']*100:.1f}%",
+                "⚠ YES" if sc["Base"]["any_covenant_breach"] else "NO",
+            ],
+            "Upside": [
+                f"{sc['Upside']['exit_ev']:.1f}",
+                f"{sc['Upside']['equity_at_exit']:.1f}",
+                f"{sc['Upside']['moic']:.2f}x",
+                f"{sc['Upside']['irr']*100:.1f}%",
+                "⚠ YES" if sc["Upside"]["any_covenant_breach"] else "NO",
+            ],
+        }).set_index("Metric")
+        st.dataframe(scenario_df, use_container_width=True)
 
-    def _irr_cell_color(val: float) -> str:
-        """Return CSS background-color string for a given IRR percentage."""
-        if val > 25:
-            bg = "#0a3d1f"
-        elif val > 20:
-            bg = "#1a5c36"
-        elif val > 15:
-            bg = "#4a5c1a"
-        elif val > 10:
-            bg = "#5c4a00"
-        else:
-            bg = "#5c1a1a"
-        return f"background-color: {bg}; color: #e8e8e8"
+        st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
-    sens_df = pd.DataFrame(
-        sens_grid,
-        index=[f"{m:.1f}x" for m in SENS_EXIT_MULTIPLES],
-        columns=[f"{lev}% Lev" for lev in SENS_LEVERAGE_RATIOS],
-    )
-    sens_df.index.name = "Exit Multiple"
+        # Sensitivity Analysis
+        st.subheader("Sensitivity Analysis — IRR (%) vs Exit Multiple & Leverage")
 
-    styled_sens = sens_df.style.applymap(_irr_cell_color).format("{:.1f}%")
-    st.dataframe(styled_sens, use_container_width=True)
+        def _irr_cell_color(val: float) -> str:
+            """Return CSS background-color string for a given IRR percentage."""
+            if val > 25:
+                bg = "#0a3d1f"
+            elif val > 20:
+                bg = "#1a5c36"
+            elif val > 15:
+                bg = "#4a5c1a"
+            elif val > 10:
+                bg = "#5c4a00"
+            else:
+                bg = "#5c1a1a"
+            return f"background-color: {bg}; color: #e8e8e8"
+
+        sens_df = pd.DataFrame(
+            sens_grid,
+            index=[f"{m:.1f}x" for m in SENS_EXIT_MULTIPLES],
+            columns=[f"{lev}% Lev" for lev in SENS_LEVERAGE_RATIOS],
+        )
+        sens_df.index.name = "Exit Multiple"
+        styled_sens = sens_df.style.applymap(_irr_cell_color).format("{:.1f}%")
+        st.dataframe(styled_sens, use_container_width=True)
+
+    # ── Tab 4: MONTE CARLO ────────────────────────────────────────────────────
+    with tab4:
+
+        st.subheader("Monte Carlo Analysis (500 simulations)")
+        ms = r["mc_stats"]
+        m1, m2, m3, m4, m5 = st.columns(5)
+        m1.metric("Mean IRR",    f"{ms['mean_irr']*100:.1f}%")
+        m2.metric("Median IRR",  f"{ms['median_irr']*100:.1f}%")
+        m3.metric("P5 / P95",   f"{ms['p5_irr']*100:.1f}% / {ms['p95_irr']*100:.1f}%")
+        m4.metric("P(IRR>20%)", f"{ms['prob_irr_above_20']*100:.1f}%")
+        m5.metric("P(Breach)",  f"{ms['prob_covenant_breach']*100:.1f}%")
+
+        fig_mc = go.Figure()
+        fig_mc.add_trace(go.Histogram(
+            x=r["mc_irr_list"],
+            nbinsx=40,
+            name="IRR",
+            marker_color="#1a3a5c",
+            opacity=0.8,
+        ))
+        fig_mc.add_vline(x=ms["mean_irr"] * 100, line_dash="dash", line_color="white",
+                         annotation_text="Mean", annotation_position="top left")
+        fig_mc.add_vline(x=20, line_dash="dot", line_color="orange",
+                         annotation_text="20% hurdle", annotation_position="top right")
+        fig_mc.update_layout(
+            xaxis_title="IRR (%)", yaxis_title="Count",
+            height=280, margin=dict(t=20, b=20), showlegend=False,
+            plot_bgcolor="#0a0a0a", paper_bgcolor="#0a0a0a",
+            font=dict(color="#e8e8e8"),
+        )
+        fig_mc.update_xaxes(gridcolor="#1a1a1a", color="#888")
+        fig_mc.update_yaxes(gridcolor="#1a1a1a", color="#888")
+        st.plotly_chart(fig_mc, use_container_width=True)
