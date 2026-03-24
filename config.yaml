@@ -1,0 +1,25 @@
+# LBO Engine — Base Case Assumptions
+# All monetary values in $M unless otherwise noted
+
+# --- Entry Deal Parameters ---
+entry_ebitda: 50.0          # LTM EBITDA of target at acquisition ($M)
+purchase_multiple: 10.0     # Entry EV / EBITDA multiple
+leverage_ratio: 0.60        # Debt as % of Entry EV (total debt / EV)
+fee_pct: 0.02               # Transaction fees as % of Entry EV (funded by equity)
+
+# --- Operating Model ---
+revenue_initial: 200.0      # Year 0 revenue ($M)
+revenue_growth: 0.06        # Annual revenue growth rate
+ebitda_margin: 0.25         # EBITDA / Revenue (assumed stable over holding period)
+capex_pct: 0.03             # Capex as % of revenue
+nwc_pct: 0.02               # Change in NWC as % of revenue growth
+tax_rate: 0.25              # Effective corporate tax rate
+
+# --- Debt Schedule ---
+holding_period: 5           # Investment horizon in years
+interest_rate: 0.08         # Annual interest rate on LBO debt (PIK/cash, simplified)
+amortization_rate: 0.05     # Mandatory annual amortization as % of initial debt
+cash_sweep: 1.0             # % of excess FCF applied to debt repayment (1.0 = 100%)
+
+# --- Exit Assumptions ---
+exit_multiple: 9.0          # Exit EV / EBITDA multiple (conservative vs. entry)
