@@ -104,15 +104,27 @@ def run_pipeline(
     mc_irr_list = [r["irr"] * 100 for r in mc_results]
 
     return {
+        # Deal
+        "entry_ebitda":   deal.entry_ebitda,
         "entry_ev":       deal.entry_ev,
+        "fees":           deal.fees,
+        "total_uses":     deal.total_uses,
         "debt_raised":    deal.debt_raised,
         "sponsor_equity": deal.sponsor_equity,
         "leverage_ratio": deal.leverage_ratio,
+        # Returns
         "moic":           ret.moic,
         "irr":            ret.irr,
+        "exit_ebitda":    ret.exit_ebitda,
+        "exit_multiple":  ret.exit_multiple,
+        "exit_ev":        ret.exit_ev,
+        "ending_debt":    ret.ending_debt,
+        "equity_at_exit": ret.equity_at_exit,
+        # Debt schedule
         "debt_years":     debt.schedule["Year"].tolist(),
         "debt_ending":    debt.schedule["Ending_Debt"].tolist(),
         "initial_debt":   deal.debt_raised,
+        # Scenarios & MC
         "scenarios":      scenarios,
         "mc_stats":       mc_stats,
         "mc_irr_list":    mc_irr_list,
@@ -121,27 +133,60 @@ def run_pipeline(
 
 # --- Page config ---
 st.set_page_config(page_title="LBO Engine", layout="wide")
-st.title("LBO Simulation Engine")
-st.caption("CFA Portfolio Project — Leveraged Buyout model with scenario and Monte Carlo analysis")
+
+st.markdown("""
+<style>
+html, body, [class*="css"] { font-size: 13px !important; }
+h1 { font-size: 16px !important; font-weight: 600 !important;
+     color: #1a1a1a !important; letter-spacing: 0.5px !important; }
+h2, h3 { font-size: 13px !important; font-weight: 600 !important;
+          color: #1a1a1a !important; text-transform: uppercase !important;
+          letter-spacing: 0.8px !important; }
+[data-testid="metric-container"] {
+    background: #f8f8f8 !important;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 2px !important;
+    padding: 8px 12px !important;
+}
+[data-testid="metric-container"] label {
+    font-size: 10px !important;
+    color: #666 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+}
+[data-testid="metric-container"] [data-testid="metric-value"] {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+}
+.block-container { padding-top: 1rem !important; padding-bottom: 0rem !important; }
+hr { margin: 0.5rem 0 !important; border-color: #e0e0e0 !important; }
+.stSubheader { margin-bottom: 0.25rem !important; }
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("### LBO SIMULATION ENGINE")
+st.markdown("<small style='color:#666'>CFA Portfolio Project — Private Equity Returns Model</small>",
+            unsafe_allow_html=True)
 
 # --- Layout ---
 left, right = st.columns([1, 2])
 
 # ── LEFT COLUMN: Sliders ──────────────────────────────────────────────────────
 with left:
-    st.subheader("Deal Parameters")
-    entry_ebitda     = st.slider("Entry EBITDA ($M)",       10.0, 200.0, 50.0,  5.0)
-    purchase_multiple = st.slider("Purchase Multiple (x)",   5.0,  20.0,  10.0,  0.5)
-    leverage_ratio   = st.slider("Leverage Ratio (%)",       20,   80,    60,    5)
+    st.markdown("**DEAL PARAMETERS**")
+    entry_ebitda      = st.number_input("Entry EBITDA ($M)",      min_value=10.0,  max_value=200.0, value=50.0,  step=5.0)
+    purchase_multiple = st.number_input("Purchase Multiple (x)",  min_value=5.0,   max_value=20.0,  value=8.0,   step=0.5)
+    leverage_ratio    = st.number_input("Leverage Ratio (%)",     min_value=20,    max_value=80,    value=50,    step=5)
 
-    st.subheader("Operating Assumptions")
-    revenue_initial  = st.slider("Revenue Initial ($M)",     50,   500,   200,   10)
-    revenue_growth   = st.slider("Revenue Growth (%)",       0,    20,    6,     1)
-    ebitda_margin    = st.slider("EBITDA Margin (%)",        10,   50,    25,    1)
+    st.markdown("**OPERATING ASSUMPTIONS**")
+    revenue_initial   = st.number_input("Revenue Initial ($M)",   min_value=50,    max_value=500,   value=200,   step=10)
+    revenue_growth    = st.number_input("Revenue Growth (%)",     min_value=0,     max_value=20,    value=8,     step=1)
+    ebitda_margin     = st.number_input("EBITDA Margin (%)",      min_value=10,    max_value=50,    value=27,    step=1)
 
-    st.subheader("Exit Assumptions")
-    exit_multiple    = st.slider("Exit Multiple (x)",        4.0,  20.0,  9.0,   0.5)
-    holding_period   = st.slider("Holding Period (years)",   3,    7,     5,     1)
+    st.markdown("**EXIT ASSUMPTIONS**")
+    exit_multiple     = st.number_input("Exit Multiple (x)",      min_value=4.0,   max_value=20.0,  value=10.0,  step=0.5)
+    holding_period    = st.number_input("Holding Period (years)",  min_value=3,     max_value=7,     value=5,     step=1)
 
 # --- Run pipeline ---
 r = run_pipeline(
@@ -155,18 +200,37 @@ with right:
 
     # Section 1 — Deal Summary
     st.subheader("Deal Summary")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Entry EV",      f"${r['entry_ev']:.0f}M")
-    c2.metric("Debt Raised",   f"${r['debt_raised']:.0f}M")
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Entry EV",       f"${r['entry_ev']:.0f}M")
+    c2.metric("Debt Raised",    f"${r['debt_raised']:.0f}M")
     c3.metric("Sponsor Equity", f"${r['sponsor_equity']:.0f}M")
-    c4.metric("Leverage",      f"{r['leverage_ratio']*100:.0f}%")
+    c4.metric("Debt / EV",      f"{r['debt_raised'] / r['entry_ev'] * 100:.0f}%")
+    c5.metric("Debt / EBITDA",  f"{r['debt_raised'] / r['entry_ebitda']:.1f}x")
 
     st.divider()
 
-    # Section 2 — Returns
+    # Section 2 — Sources & Uses
+    st.subheader("Sources & Uses")
+    uses_col, sources_col = st.columns(2)
+    with uses_col:
+        st.markdown("**USES**")
+        st.markdown(f"Purchase Price &nbsp;&nbsp;&nbsp;&nbsp; **${r['entry_ev']:.1f}M**")
+        st.markdown(f"Transaction Fees &nbsp;&nbsp; **${r['fees']:.1f}M**")
+        st.markdown("---")
+        st.markdown(f"**Total Uses** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${r['total_uses']:.1f}M**")
+    with sources_col:
+        st.markdown("**SOURCES**")
+        st.markdown(f"Debt Raised &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${r['debt_raised']:.1f}M**")
+        st.markdown(f"Sponsor Equity &nbsp;&nbsp;&nbsp;&nbsp; **${r['sponsor_equity']:.1f}M**")
+        st.markdown("---")
+        st.markdown(f"**Total Sources** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **${r['total_uses']:.1f}M**")
+
+    st.divider()
+
+    # Section 3 — Returns
     st.subheader("Investor Returns")
     irr = r["irr"]
-    irr_color = "green" if irr > 0.20 else "orange" if irr > 0.10 else "red"
+    irr_color = "#0a5c36" if irr > 0.20 else "#7a6000" if irr > 0.10 else "#8b0000"
     rc1, rc2 = st.columns(2)
     rc1.metric("MOIC", f"{r['moic']:.2f}x")
     with rc2:
@@ -178,14 +242,25 @@ with right:
 
     st.divider()
 
-    # Section 3 — Debt Paydown Chart
+    # Section 4 — Exit Analysis
+    st.subheader("Exit Analysis")
+    e1, e2, e3, e4, e5 = st.columns(5)
+    e1.metric("Exit EBITDA ($M)",    f"${r['exit_ebitda']:.1f}M")
+    e2.metric("Exit Multiple (x)",   f"{r['exit_multiple']:.1f}x")
+    e3.metric("Exit EV ($M)",        f"${r['exit_ev']:.1f}M")
+    e4.metric("Net Debt at Exit ($M)", f"${r['ending_debt']:.1f}M")
+    e5.metric("Equity at Exit ($M)", f"${r['equity_at_exit']:.1f}M")
+
+    st.divider()
+
+    # Section 5 — Debt Paydown Chart
     st.subheader("Debt Paydown")
     fig_debt = go.Figure()
     fig_debt.add_trace(go.Bar(
         x=r["debt_years"],
         y=r["debt_ending"],
         name="Ending Debt",
-        marker_color="#3b82f6",
+        marker_color="#1a3a5c",
     ))
     fig_debt.add_hline(
         y=r["initial_debt"],
@@ -200,7 +275,11 @@ with right:
         height=280,
         margin=dict(t=20, b=20),
         showlegend=False,
+        plot_bgcolor="#ffffff",
+        paper_bgcolor="#ffffff",
     )
+    fig_debt.update_xaxes(showgrid=False)
+    fig_debt.update_yaxes(gridcolor="#f0f0f0")
     st.plotly_chart(fig_debt, use_container_width=True)
 
     st.divider()
@@ -251,7 +330,7 @@ with right:
         x=r["mc_irr_list"],
         nbinsx=40,
         name="IRR",
-        marker_color="#6366f1",
+        marker_color="#1a3a5c",
         opacity=0.8,
     ))
     fig_mc.add_vline(x=ms["mean_irr"] * 100,  line_dash="dash", line_color="white",
@@ -264,5 +343,7 @@ with right:
         height=280,
         margin=dict(t=20, b=20),
         showlegend=False,
+        plot_bgcolor="#ffffff",
+        paper_bgcolor="#ffffff",
     )
     st.plotly_chart(fig_mc, use_container_width=True)
