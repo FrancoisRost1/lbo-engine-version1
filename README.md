@@ -126,5 +126,6 @@ lbo-engine/
 │
 └── app/
     └── streamlit_app.py     # Interactive dashboard — Bloomberg dark mode, 5 tabs
-```
+```## License
 
+MIT
