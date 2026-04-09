@@ -5,7 +5,12 @@ Computes Exit EV, equity value at exit, MOIC, and IRR from the
 perspective of the sponsor (PE fund).
 """
 
+import logging
+
+import numpy as np
 import numpy_financial as npf
+
+logger = logging.getLogger(__name__)
 
 
 class Returns:
@@ -57,12 +62,20 @@ class Returns:
         self.equity_at_exit = max(0.0, self.exit_ev - ending_debt)
 
         # --- Returns ---
-        self.moic = self.equity_at_exit / sponsor_equity
+        if sponsor_equity == 0:
+            self.moic = np.nan
+            logger.warning("Sponsor equity is zero — MOIC undefined")
+        else:
+            self.moic = self.equity_at_exit / sponsor_equity
 
         # IRR cash flow vector: [-equity_in, 0, 0, ..., equity_out]
         # No interim dividends assumed
         cf = [-sponsor_equity] + [0.0] * (holding_period - 1) + [self.equity_at_exit]
         self.irr = npf.irr(cf)
+
+        if self.irr is None or (isinstance(self.irr, float) and np.isnan(self.irr)):
+            self.irr = np.nan
+            logger.warning("IRR solver did not converge — set to NaN")
 
     def summary(self) -> dict:
         """
@@ -79,7 +92,7 @@ class Returns:
             "Equity at Exit ($M)":    self.equity_at_exit,
             "Sponsor Equity In ($M)": self.sponsor_equity,
             "MOIC (x)":               self.moic,
-            "IRR (%)":                self.irr * 100,
+            "IRR (%)":                self.irr * 100 if not np.isnan(self.irr) else np.nan,
         }
 
     def print_summary(self) -> None:
@@ -103,7 +116,9 @@ class Returns:
         print(f"  {'Sponsor Equity Invested':<28} ${self.sponsor_equity:>8.1f}M")
         print(f"  {'Holding Period':<28} {self.holding_period:>9d} yrs")
         print(f"  {sep[2:]}")
-        print(f"  {'MOIC':<28} {self.moic:>9.2f}x")
-        print(f"  {'IRR':<28} {self.irr*100:>8.1f}%")
+        moic_str = f"{self.moic:>9.2f}x" if not np.isnan(self.moic) else f"{'N/A':>10}"
+        irr_str = f"{self.irr*100:>8.1f}%" if not np.isnan(self.irr) else f"{'N/A':>9}"
+        print(f"  {'MOIC':<28} {moic_str}")
+        print(f"  {'IRR':<28} {irr_str}")
 
         print(f"\n{sep}\n")

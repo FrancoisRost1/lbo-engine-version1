@@ -12,7 +12,8 @@ from lbo.debt_schedule import DebtSchedule
 from lbo.returns import Returns
 from lbo.covenants import check_covenants, print_covenant_summary
 from lbo.scenarios import run_scenarios, print_scenario_summary
-from lbo.monte_carlo import run_monte_carlo, compute_mc_statistics, print_mc_summary
+from lbo.monte_carlo import run_monte_carlo
+from lbo.mc_stats import compute_mc_statistics, print_mc_summary
 
 
 def load_config(path: str = "config.yaml") -> dict:
@@ -62,14 +63,14 @@ def main():
     )
     ret.print_summary()
 
-    covenant_results = check_covenants(debt, op)
+    covenant_results = check_covenants(debt, op, cfg=config)
     print_covenant_summary(covenant_results)
 
     scenario_results = run_scenarios(config)
     print_scenario_summary(scenario_results)
 
-    mc_results = run_monte_carlo(config, n_simulations=1000)
-    mc_stats = compute_mc_statistics(mc_results)
+    mc_results = run_monte_carlo(config)
+    mc_stats = compute_mc_statistics(mc_results, cfg=config)
     print_mc_summary(mc_stats)
 
 

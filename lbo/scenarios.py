@@ -10,20 +10,13 @@ from lbo.debt_schedule import DebtSchedule
 from lbo.returns import Returns
 from lbo.covenants import check_covenants
 
-# --- Scenario overrides (only these three parameters vary across scenarios) ---
-SCENARIOS = {
-    "Downside": {"revenue_growth": 0.03, "ebitda_margin": 0.22, "exit_multiple": 8.0},
-    "Base":     {"revenue_growth": 0.06, "ebitda_margin": 0.25, "exit_multiple": 9.0},
-    "Upside":   {"revenue_growth": 0.09, "ebitda_margin": 0.27, "exit_multiple": 10.0},
-}
-
 
 def run_scenarios(base_config: dict) -> dict:
     """
     Run the full LBO pipeline for each scenario and return a results summary.
 
     For each scenario, overrides revenue_growth, ebitda_margin, and exit_multiple
-    from SCENARIOS while keeping all other parameters from base_config unchanged.
+    from cfg["scenarios"] while keeping all other parameters from base_config unchanged.
 
     Pipeline per scenario:
         OperatingModel → DebtSchedule → Returns → check_covenants
@@ -46,9 +39,15 @@ def run_scenarios(base_config: dict) -> dict:
         fee_pct=base_config["fee_pct"],
     )
 
+    scenarios = base_config.get("scenarios", {
+        "Downside": {"revenue_growth": 0.03, "ebitda_margin": 0.22, "exit_multiple": 8.0},
+        "Base":     {"revenue_growth": 0.06, "ebitda_margin": 0.25, "exit_multiple": 9.0},
+        "Upside":   {"revenue_growth": 0.09, "ebitda_margin": 0.27, "exit_multiple": 10.0},
+    })
+
     results = {}
 
-    for name, overrides in SCENARIOS.items():
+    for name, overrides in scenarios.items():
         cfg = {**base_config, **overrides}
 
         op = OperatingModel(
@@ -77,7 +76,7 @@ def run_scenarios(base_config: dict) -> dict:
             holding_period=cfg["holding_period"],
         )
 
-        covenants = check_covenants(debt, op)
+        covenants = check_covenants(debt, op, cfg=base_config)
         any_breach = any(r["any_breach"] for r in covenants)
 
         results[name] = {

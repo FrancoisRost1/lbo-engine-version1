@@ -23,3 +23,46 @@ cash_sweep: 1.0             # % of excess FCF applied to debt repayment (1.0 = 1
 
 # --- Exit Assumptions ---
 exit_multiple: 9.0          # Exit EV / EBITDA multiple (conservative vs. entry)
+
+# --- Covenant Thresholds ---
+covenants:
+  leverage_threshold: 6.0   # Maximum Debt / EBITDA allowed
+  coverage_threshold: 2.0   # Minimum EBITDA / Interest required
+
+# --- Scenario Overrides ---
+# Only these three parameters vary across scenarios; all others use base case.
+scenarios:
+  Downside:
+    revenue_growth: 0.03
+    ebitda_margin: 0.22
+    exit_multiple: 8.0
+  Base:
+    revenue_growth: 0.06
+    ebitda_margin: 0.25
+    exit_multiple: 9.0
+  Upside:
+    revenue_growth: 0.09
+    ebitda_margin: 0.27
+    exit_multiple: 10.0
+
+# --- Monte Carlo Distribution Parameters ---
+monte_carlo:
+  n_simulations: 1000
+  revenue_growth:
+    mean: 0.06
+    std: 0.02
+    min: -0.05
+    max: 0.20
+  ebitda_margin:
+    mean: 0.25
+    std: 0.02
+    min: 0.10
+    max: 0.50
+  exit_multiple:
+    mean: 9.0
+    std: 1.0
+    min: 4.0
+    max: 16.0
+  hurdles:
+    irr: 0.20              # 20% IRR target
+    moic: 2.0               # 2.0x MOIC target

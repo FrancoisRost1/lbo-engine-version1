@@ -20,8 +20,8 @@ class OperatingModel:
     - EBITDA margin is stable throughout the holding period.
     - Taxes are applied directly to EBITDA (ignores interest deductibility
       and D&A shield) — this overstates taxes and produces conservative FCF.
-    - Delta NWC is proportional to revenue each year (not to the revenue delta),
-      reflecting the cash tied up in working capital as the business scales.
+    - Delta NWC is the incremental working capital investment: nwc_pct × (Revenue(t) − Revenue(t−1)).
+      Year 1 uses entry revenue as the base. Only the change in NWC drains cash.
     - No D&A schedule; capex is treated as a pure cash outflow.
     """
 
@@ -66,6 +66,7 @@ class OperatingModel:
                           One row per year from Year 1 to holding_period.
         """
         rows = []
+        prev_revenue = self.revenue_initial
         revenue = self.revenue_initial
 
         for t in range(1, self.holding_period + 1):
@@ -74,8 +75,10 @@ class OperatingModel:
             capex = revenue * self.capex_pct
             # Simplified tax: applied to EBITDA (ignores interest shield and D&A)
             taxes = ebitda * self.tax_rate
-            delta_nwc = revenue * self.nwc_pct
+            # ΔNWC = incremental working capital tied up as revenue grows
+            delta_nwc = (revenue - prev_revenue) * self.nwc_pct
             fcf = ebitda - capex - taxes - delta_nwc
+            prev_revenue = revenue
 
             rows.append({
                 "Year":      t,
@@ -118,14 +121,9 @@ class OperatingModel:
         return float(row["EBITDA"].iloc[0])
 
     def print_summary(self) -> None:
-        """
-        Print the operating projection as a formatted table to the terminal.
-
-        Columns are right-aligned and values are shown in $M with one decimal place.
-        """
+        """Print the operating projection as a formatted table to the terminal."""
         sep = "─" * 66
-
-        print(f"\n{'OPERATING MODEL — 5-YEAR PROJECTION':^66}")
+        print(f"\n{f'OPERATING MODEL — {self.holding_period}-YEAR PROJECTION':^66}")
         print(sep)
         print(f"  {'Year':>4}  {'Revenue':>10}  {'EBITDA':>10}  {'Capex':>8}  "
               f"{'Taxes':>8}  {'ΔNWC':>8}  {'FCF':>8}")
