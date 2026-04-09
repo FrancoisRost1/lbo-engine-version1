@@ -3,4 +3,5 @@ __pycache__/
 .DS_Store
 .env
 outputs/
+lbo_engine.egg-info/
 
