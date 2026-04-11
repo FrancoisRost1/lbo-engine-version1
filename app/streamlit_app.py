@@ -37,7 +37,7 @@ FIXED = get_fixed_params(cfg)
 SCENARIO_PRESETS = get_scenario_presets(cfg)
 
 st.markdown("### LBO SIMULATION ENGINE")
-st.markdown("<small style='color:#666'>CFA Portfolio Project — Private Equity Returns Model</small>",
+st.markdown("<small style='color:#666'>CFA Portfolio Project | Private Equity Returns Model</small>",
             unsafe_allow_html=True)
 
 # --- Layout ---

@@ -37,7 +37,7 @@ def render(r: dict) -> None:
         st.markdown(f"""
         <div style='background:#111;border:1px solid #333;padding:20px;border-radius:2px'>
         <h3 style='color:#fff;margin-bottom:4px'>INVESTMENT COMMITTEE MEMO</h3>
-        <p style='color:#888;font-size:11px'>Generated — Base Case Analysis</p>
+        <p style='color:#888;font-size:11px'>Generated. Base Case Analysis</p>
 
         <div style='background:{verdict_color};padding:8px 12px;margin:12px 0;border-radius:2px'>
         <strong style='color:#fff'>RECOMMENDATION: {verdict}</strong>
@@ -84,7 +84,7 @@ def render(r: dict) -> None:
 
         <h4 style='color:#bbb'>KEY RISK</h4>
         <p style='color:#ccc'>
-        {"• Return heavily dependent on multiple expansion" if r['vc_multiple_effect'] > r['vc_ebitda_growth'] else "• Return driven primarily by debt paydown, limited operational improvement" if r['vc_debt_paydown'] > r['vc_ebitda_growth'] else "• Return driven by EBITDA growth — execution risk on operational targets"}
+        {"• Return heavily dependent on multiple expansion" if r['vc_multiple_effect'] > r['vc_ebitda_growth'] else "• Return driven primarily by debt paydown, limited operational improvement" if r['vc_debt_paydown'] > r['vc_ebitda_growth'] else "• Return driven by EBITDA growth, execution risk on operational targets"}
         </p>
         </div>
         """, unsafe_allow_html=True)

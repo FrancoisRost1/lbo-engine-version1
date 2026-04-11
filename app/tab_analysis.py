@@ -43,21 +43,21 @@ def render(r: dict, sens_grid: list) -> None:
             f"{sc['Downside']['equity_at_exit']:.1f}",
             f"{sc['Downside']['moic']:.2f}x",
             f"{sc['Downside']['irr']*100:.1f}%",
-            "⚠ YES" if sc["Downside"]["any_covenant_breach"] else "NO",
+            "YES" if sc["Downside"]["any_covenant_breach"] else "NO",
         ],
         "Base": [
             f"{sc['Base']['exit_ev']:.1f}",
             f"{sc['Base']['equity_at_exit']:.1f}",
             f"{sc['Base']['moic']:.2f}x",
             f"{sc['Base']['irr']*100:.1f}%",
-            "⚠ YES" if sc["Base"]["any_covenant_breach"] else "NO",
+            "YES" if sc["Base"]["any_covenant_breach"] else "NO",
         ],
         "Upside": [
             f"{sc['Upside']['exit_ev']:.1f}",
             f"{sc['Upside']['equity_at_exit']:.1f}",
             f"{sc['Upside']['moic']:.2f}x",
             f"{sc['Upside']['irr']*100:.1f}%",
-            "⚠ YES" if sc["Upside"]["any_covenant_breach"] else "NO",
+            "YES" if sc["Upside"]["any_covenant_breach"] else "NO",
         ],
     }).set_index("Metric")
     st.dataframe(scenario_df, use_container_width=True)
@@ -65,7 +65,7 @@ def render(r: dict, sens_grid: list) -> None:
     st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Sensitivity Analysis
-    st.subheader("Sensitivity Analysis — IRR (%) vs Exit Multiple & Leverage")
+    st.subheader("Sensitivity Analysis: IRR (%) vs Exit Multiple and Leverage")
 
     sens_df = pd.DataFrame(
         sens_grid,

@@ -1,7 +1,7 @@
 # LBO Simulation Engine
 
 Built a full Private Equity leveraged buyout (LBO) engine in Python that
-replicates how investors evaluate deals — from entry assumptions to exit returns.
+replicates how investors evaluate deals, from entry assumptions to exit returns.
 
 The model projects financial performance, simulates debt repayment, and outputs
 key investment metrics (IRR, MOIC, equity value) across scenarios. Monte Carlo
@@ -16,7 +16,7 @@ real-world PE investment committee analysis.
 - Ability to model a full PE deal from scratch
 - Understanding of capital structure, leverage, and return drivers
 - Ability to translate financial models into interactive decision tools
-- Clean Python architecture — modular, separated by concern, documented
+- Clean Python architecture: modular, separated by concern, documented
 
 ---
 
@@ -24,13 +24,13 @@ real-world PE investment committee analysis.
 
 | Financial Engine | Interactive Dashboard |
 |---|---|
-| Deal model — Sources & Uses, sponsor equity | KPI banner — IRR and MOIC always visible |
-| Operating model — FCF projection | Scenario toggle — Base / Downside / Upside |
-| Debt schedule — mandatory amortization + cash sweep | Value Creation Bridge waterfall chart |
-| Returns — MOIC and IRR | Sensitivity table — IRR vs leverage × exit multiple |
-| Covenant testing — leverage and coverage ratios | Monte Carlo histogram with hurdle line |
-| Scenario analysis — Downside / Base / Upside | IC Memo generator — auto investment recommendation |
-| Monte Carlo simulation — 500 runs | STRONG BUY / BUY / CONDITIONAL BUY / PASS verdict |
+| Deal model: Sources & Uses, sponsor equity | KPI banner: IRR and MOIC always visible |
+| Operating model: FCF projection | Scenario toggle: Base / Downside / Upside |
+| Debt schedule: mandatory amortization + cash sweep | Value Creation Bridge waterfall chart |
+| Returns: MOIC and IRR | Sensitivity table: IRR vs leverage × exit multiple |
+| Covenant testing: leverage and coverage ratios | Monte Carlo histogram with hurdle line |
+| Scenario analysis: Downside / Base / Upside | IC Memo generator: auto investment recommendation |
+| Monte Carlo simulation: 500 runs | STRONG BUY / BUY / CONDITIONAL BUY / PASS verdict |
 
 ---
 
@@ -101,7 +101,7 @@ IRR            = numpy_financial.irr([−Sponsor Equity, 0, …, Equity at Exit]
 |---|---|
 | Python 3 | Core engine |
 | Streamlit | Interactive web dashboard |
-| Plotly | Charts — waterfall, histogram, bar |
+| Plotly | Charts: waterfall, histogram, bar |
 | Pandas | DataFrames, scenario tables |
 | numpy-financial | IRR calculation |
 | PyYAML | Config file parsing |
@@ -112,7 +112,7 @@ IRR            = numpy_financial.irr([−Sponsor Equity, 0, …, Equity at Exit]
 
 ```
 lbo-engine/
-├── main.py                  # Orchestrator — runs full pipeline, prints results
+├── main.py                  # Orchestrator, runs full pipeline, prints results
 ├── config.yaml              # All base case assumptions
 │
 ├── lbo/
@@ -125,7 +125,7 @@ lbo-engine/
 │   └── monte_carlo.py       # 500+ simulations, IRR distribution
 │
 └── app/
-    └── streamlit_app.py     # Interactive dashboard — Bloomberg dark mode, 5 tabs
+    └── streamlit_app.py     # Interactive dashboard, Bloomberg dark mode, 5 tabs
 ```## License
 
 MIT
