@@ -105,6 +105,12 @@ with right:
         )
     k3.metric("Exit EV", f"${r['exit_ev']:.0f}M")
     k4.metric("Equity at Exit", f"${r['equity_at_exit']:.0f}M")
+    st.caption(
+        f"Headline IRR and MOIC reflect the selected '{scenario}' scenario "
+        f"with the current sidebar inputs (a single deterministic path). "
+        f"The MONTE CARLO tab shows the IRR distribution across "
+        f"{r['mc_stats']['n_simulations']} randomized simulations."
+    )
     st.markdown("<hr style='margin:0.3rem 0; border-color:#2a2a2a'>", unsafe_allow_html=True)
 
     # Tabs
